@@ -116,6 +116,125 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get posts liked by current authenticated user
+router.get('/liked', ClerkExpressRequireAuth({}), async (req, res) => {
+  try {
+    const auth = (req as any).auth;
+    const user = await prisma.user.findUnique({ where: { clerkId: auth.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found in DB' });
+
+    const likes = await prisma.like.findMany({
+      where: { userId: user.id },
+      include: {
+        post: {
+          include: {
+            author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+            startup: { select: { id: true, name: true, logo: true } },
+            likes: { select: { userId: true } },
+            bookmarks: { select: { userId: true } },
+            _count: { select: { comments: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const likedPosts = likes.map(l => ({
+      ...l.post,
+      likesCount: l.post.likes.length,
+      commentsCount: l.post._count.comments,
+      isLiked: true,
+      isBookmarked: l.post.bookmarks.some(bm => bm.userId === user.id),
+      likes: undefined,
+      bookmarks: undefined,
+      _count: undefined
+    }));
+
+    res.json(likedPosts);
+  } catch (error) {
+    console.error('[Posts Route] Failed to fetch liked posts:', error);
+    res.status(500).json({ error: 'Failed to fetch liked posts' });
+  }
+});
+
+// Get posts bookmarked by current authenticated user
+router.get('/bookmarked', ClerkExpressRequireAuth({}), async (req, res) => {
+  try {
+    const auth = (req as any).auth;
+    const user = await prisma.user.findUnique({ where: { clerkId: auth.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found in DB' });
+
+    const bookmarks = await prisma.bookmark.findMany({
+      where: { userId: user.id },
+      include: {
+        post: {
+          include: {
+            author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+            startup: { select: { id: true, name: true, logo: true } },
+            likes: { select: { userId: true } },
+            bookmarks: { select: { userId: true } },
+            _count: { select: { comments: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const bookmarkedPosts = bookmarks.map(b => ({
+      ...b.post,
+      likesCount: b.post.likes.length,
+      commentsCount: b.post._count.comments,
+      isLiked: b.post.likes.some(lk => lk.userId === user.id),
+      isBookmarked: true,
+      likes: undefined,
+      bookmarks: undefined,
+      _count: undefined
+    }));
+
+    res.json(bookmarkedPosts);
+  } catch (error) {
+    console.error('[Posts Route] Failed to fetch bookmarked posts:', error);
+    res.status(500).json({ error: 'Failed to fetch bookmarked posts' });
+  }
+});
+
+// Get posts authored by current authenticated user
+router.get('/mine', ClerkExpressRequireAuth({}), async (req, res) => {
+  try {
+    const auth = (req as any).auth;
+    const user = await prisma.user.findUnique({ where: { clerkId: auth.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found in DB' });
+
+    const posts = await prisma.post.findMany({
+      where: { authorId: user.id },
+      include: {
+        author: { select: { id: true, name: true, role: true, avatarUrl: true } },
+        startup: { select: { id: true, name: true, logo: true } },
+        likes: { select: { userId: true } },
+        bookmarks: { select: { userId: true } },
+        _count: { select: { comments: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const myPosts = posts.map(post => ({
+      ...post,
+      likesCount: post.likes.length,
+      commentsCount: post._count.comments,
+      isLiked: post.likes.some(lk => lk.userId === user.id),
+      isBookmarked: post.bookmarks.some(bm => bm.userId === user.id),
+      likes: undefined,
+      bookmarks: undefined,
+      _count: undefined
+    }));
+
+    res.json(myPosts);
+  } catch (error) {
+    console.error('[Posts Route] Failed to fetch user posts:', error);
+    res.status(500).json({ error: 'Failed to fetch user posts' });
+  }
+});
+
 // Like / Unlike post
 router.post('/:id/like', ClerkExpressRequireAuth({}), async (req, res) => {
   try {

@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 import { FeedProvider } from "@/context/FeedContext";
+import { ConnectionProvider } from "@/components/ConnectionProvider";
 
 export default function RootLayout({
   children,
@@ -32,10 +33,13 @@ export default function RootLayout({
     <ClerkProvider publishableKey={publishableKey}>
       <html
         lang="en"
+        suppressHydrationWarning
         className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col">
-          <FeedProvider>{children}</FeedProvider>
+        <body className="min-h-full flex flex-col" suppressHydrationWarning>
+          <ConnectionProvider>
+            <FeedProvider>{children}</FeedProvider>
+          </ConnectionProvider>
         </body>
       </html>
     </ClerkProvider>

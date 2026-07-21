@@ -7,6 +7,7 @@ import { useAuth, useUser, useClerk } from "@clerk/nextjs";
 import { Home, Building2, Briefcase, Inbox, MessageSquare, LayoutDashboard, User, Settings, Menu, X, LogOut, ChevronDown, UserCheck, ShieldAlert, Compass, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getApiUrl } from "@/lib/apiConfig";
+import { resilientFetch } from "@/lib/apiClient";
 import SearchOmnibox from "./SearchOmnibox";
 
 import NavbarMeetButton from "./meet/NavbarMeetButton";
@@ -108,52 +109,31 @@ export default function Navbar() {
   }, [clerkLoaded, clerkUser]);
 
   const fetchDBUser = async () => {
-    // 1. Verify Clerk user ID is available before making request
     if (!clerkUser || !clerkUser.id) {
       console.warn("[Navbar] Clerk user or user ID is not available. Skipping DB user fetch.");
       return;
     }
 
-    // 2. Resolve API URL with fallback
-    const apiUrl = getApiUrl();
+    const token = await getToken();
 
-    try {
-      // 3. Obtain authentication token
-      const token = await getToken();
+    // Fetch DB user details safely via resilientFetch
+    const userRes = await resilientFetch<DBUser>(`/api/users/clerk/${clerkUser.id}`, { token });
 
-      // 4. Fetch DB user details
-      const userEndpoint = `${apiUrl}/api/users/clerk/${clerkUser.id}`;
-      console.log(`[Navbar Request] GET ${userEndpoint} | Base API URL: ${apiUrl}`);
-      const res = await fetch(userEndpoint);
-
-      if (!res.ok) {
-        console.warn(`[Navbar] Backend returned non-OK status: ${res.status} ${res.statusText} for endpoint: ${userEndpoint}`);
-        return;
-      }
-
-      const data = await res.json();
+    if (userRes.success && userRes.data) {
+      const data = userRes.data;
       globalCachedUser = data;
       setDbUser(data);
       try {
         localStorage.setItem("noventra_user_cache", JSON.stringify(data));
       } catch (e) {}
 
-      // 5. Fetch inbox requests count if token is present
-      if (!token) {
-        console.warn("[Navbar] Auth token unavailable, skipping inbox count fetch.");
-        return;
-      }
+      // Fetch inbox requests count if token is present
+      if (token) {
+        const reqPath = data.role === "FOUNDER" ? "/api/requests/incoming" : "/api/requests/sent";
+        const reqRes = await resilientFetch<any[]>(reqPath, { token });
 
-      const reqPath = data.role === "FOUNDER" ? "/api/requests/incoming" : "/api/requests/sent";
-      const reqEndpoint = `${apiUrl}${reqPath}`;
-      console.log(`[Navbar Request] GET ${reqEndpoint} | Base API URL: ${apiUrl}`);
-      const reqRes = await fetch(reqEndpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (reqRes.ok) {
-        const reqs = await reqRes.json();
-        if (Array.isArray(reqs)) {
+        if (reqRes.success && Array.isArray(reqRes.data)) {
+          const reqs = reqRes.data;
           const pending = data.role === "FOUNDER"
             ? reqs.filter((r: any) => r.status === "PENDING").length
             : reqs.length;
@@ -163,12 +143,9 @@ export default function Navbar() {
             localStorage.setItem("noventra_inbox_count", pending.toString());
           } catch (e) {}
         }
-      } else {
-        console.warn(`[Navbar] Failed to fetch requests. Status: ${reqRes.status} ${reqRes.statusText}`);
       }
-    } catch (err) {
-      // 6. Graceful error handling for network / backend unreachable errors
-      console.error("[Navbar] Failed to reach backend server or fetch user details:", err);
+    } else if (userRes.offline) {
+      console.log("[Navbar] Working offline with cached profile.");
     }
   };
 
