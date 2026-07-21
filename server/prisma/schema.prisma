@@ -1,0 +1,365 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FOUNDER
+  INVESTOR
+  USER
+}
+
+enum RequestType {
+  JOB
+  INTERN
+  CO_FOUNDER
+  INVESTMENT
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum TeamRole {
+  EMPLOYEE
+  INTERN
+  CO_FOUNDER
+}
+
+enum MeetingStatus {
+  ACTIVE
+  ENDED
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  clerkId            String    @unique
+  email              String    @unique
+  name               String
+  role               Role?
+  avatarUrl          String?
+  bio                String?
+  skills             String[]  @default([])
+  interests          String[]  @default([])
+  location           String?
+  openToInvest       Boolean   @default(false)
+  ticketSize         String?
+  investmentInterests String[] @default([])
+  portfolioCount     Int       @default(0)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  startups           Startup[] @relation("FounderStartups")
+  sentRequests       Request[] @relation("SentRequests")
+  receivedRequests   Request[] @relation("ReceivedRequests")
+  teamMemberships    TeamMember[]
+
+  posts              Post[]
+  likes              Like[]
+  comments           Comment[]
+  bookmarks          Bookmark[]
+  
+  followers          Follow[]  @relation("UserFollowing")
+  following          Follow[]  @relation("UserFollowers")
+  
+  sentMessages       Message[] @relation("SentMessages")
+  receivedMessages   Message[] @relation("ReceivedMessages")
+  createdMeetings    Meeting[] @relation("CreatedMeetings")
+  meetingParticipations MeetingParticipant[]
+
+  @@index([name])
+  @@index([role])
+  @@index([location])
+}
+
+model Startup {
+  id             String    @id @default(uuid())
+  name           String
+  logo           String?
+  description    String
+  industry       String
+  stage          String
+  location       String
+  requiredRoles  String[]
+  fundingNeeded  String?
+  tagline        String?
+  teamSize       Int       @default(1)
+  founderId      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  founder        User      @relation("FounderStartups", fields: [founderId], references: [id], onDelete: Cascade)
+  requests       Request[]
+  teamMembers    TeamMember[]
+  connectedVCs   ConnectedVC[]
+  meetings       Meeting[]
+  posts          Post[]
+
+  @@index([name])
+  @@index([industry])
+  @@index([stage])
+  @@index([location])
+  @@index([founderId])
+}
+
+model Request {
+  id                String    @id @default(uuid())
+  senderId          String
+  receiverFounderId String
+  startupId         String
+  requestType       RequestType
+  message           String?
+  status            RequestStatus @default(PENDING)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  sender            User      @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverFounder   User      @relation("ReceivedRequests", fields: [receiverFounderId], references: [id], onDelete: Cascade)
+  startup           Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverFounderId])
+  @@index([startupId])
+}
+
+model TeamMember {
+  id          String    @id @default(uuid())
+  startupId   String
+  userId      String
+  role        TeamRole
+  status      String    @default("ACTIVE")
+  joinedAt    DateTime  @default(now())
+
+  startup     Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+  @@index([userId])
+}
+
+model ConnectedVC {
+  id          String    @id @default(uuid())
+  startupId   String
+  vcId        String
+  connectedAt DateTime  @default(now())
+
+  startup     Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@index([startupId])
+  @@index([vcId])
+}
+
+model Meeting {
+  id                String    @id @default(uuid())
+  title             String?
+  description       String?
+  meetingType       String    @default("GENERAL") // PITCH | CANVAS | DD_ROOM | INTERVIEW | MENTORSHIP | GENERAL
+  startupId         String?
+  hostFounderId     String
+  creatorId         String?
+  meetingCode       String    @unique
+  meetingSlug       String?
+  status            MeetingStatus @default(ACTIVE)
+  isPrivate         Boolean   @default(false)
+  password          String?
+  waitingRoom       Boolean   @default(true)
+  maxParticipants   Int       @default(10)
+  participantLimit  Int       @default(10)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  endedAt           DateTime?
+
+  startup           Startup?  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  creator           User?     @relation("CreatedMeetings", fields: [creatorId], references: [id], onDelete: Cascade)
+  participants      MeetingParticipant[]
+  notes             MeetingNote[]
+  tasks             MeetingTask[]
+  documents         MeetingDocument[]
+  messages          MeetingMessage[]
+  recordings        MeetingRecording[]
+  files             MeetingFile[]
+
+  @@index([startupId])
+  @@index([hostFounderId])
+  @@index([creatorId])
+  @@index([meetingCode])
+}
+
+model MeetingParticipant {
+  id            String    @id @default(uuid())
+  meetingId     String
+  userId        String
+  joinedAt      DateTime  @default(now())
+  leftAt        DateTime?
+  role          String    @default("PARTICIPANT") // HOST | CO_HOST | PARTICIPANT
+  micEnabled    Boolean   @default(true)
+  cameraEnabled Boolean   @default(true)
+  screenSharing Boolean   @default(false)
+  handRaised    Boolean   @default(false)
+
+  meeting       Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+  @@index([meetingId])
+  @@index([userId])
+}
+
+model MeetingMessage {
+  id          String    @id @default(uuid())
+  meetingId   String
+  senderId    String
+  senderName  String
+  content     String
+  createdAt   DateTime  @default(now())
+
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  @@index([meetingId])
+}
+
+model MeetingRecording {
+  id          String    @id @default(uuid())
+  meetingId   String
+  url         String
+  duration    Int?
+  createdAt   DateTime  @default(now())
+
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  @@index([meetingId])
+}
+
+model MeetingFile {
+  id          String    @id @default(uuid())
+  meetingId   String
+  name        String
+  url         String
+  size        Int?
+  createdAt   DateTime  @default(now())
+
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  @@index([meetingId])
+}
+
+model MeetingNote {
+  id          String    @id @default(uuid())
+  meetingId   String
+  authorId    String
+  authorName  String
+  content     String
+  createdAt   DateTime  @default(now())
+
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  @@index([meetingId])
+}
+
+model MeetingTask {
+  id          String    @id @default(uuid())
+  meetingId   String
+  title       String
+  assignee    String?
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  @@index([meetingId])
+}
+
+model MeetingDocument {
+  id          String    @id @default(uuid())
+  meetingId   String
+  name        String
+  url         String
+  fileType    String?
+  createdAt   DateTime  @default(now())
+
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  @@index([meetingId])
+}
+
+model Post {
+  id             String    @id @default(uuid())
+  content        String
+  postType       String    @default("text") // "text" | "image" | "startup_update" | "hiring" | "funding"
+  mediaUrl       String?
+  startupId      String?
+  authorId       String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  author         User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  startup        Startup?  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  likes          Like[]
+  comments       Comment[]
+  bookmarks      Bookmark[]
+
+  @@index([authorId])
+  @@index([startupId])
+  @@index([createdAt])
+  @@index([postType])
+}
+
+model Like {
+  id             String    @id @default(uuid())
+  userId         String
+  postId         String
+  createdAt      DateTime  @default(now())
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id             String    @id @default(uuid())
+  content        String
+  userId         String
+  postId         String
+  createdAt      DateTime  @default(now())
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id             String    @id @default(uuid())
+  userId         String
+  postId         String
+  createdAt      DateTime  @default(now())
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}
+
+model Follow {
+  followerId     String
+  followingId    String
+  createdAt      DateTime  @default(now())
+
+  follower       User      @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following      User      @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  senderId       String
+  receiverId     String
+  content        String
+  createdAt      DateTime  @default(now())
+
+  sender         User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver       User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
