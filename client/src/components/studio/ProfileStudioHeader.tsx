@@ -34,7 +34,7 @@ export default function ProfileStudioHeader({
   const [showCompletenessSuggestions, setShowCompletenessSuggestions] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-3 px-4 sm:px-8">
+    <header className="sticky top-16 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-2xs py-3 px-4 sm:px-8">
       <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
         {/* Title & Auto-Save Status */}

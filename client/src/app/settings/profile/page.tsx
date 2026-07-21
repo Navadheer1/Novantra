@@ -31,7 +31,11 @@ import NotificationsStudioSection from "@/components/studio/sections/Notificatio
 
 const LOCAL_STORAGE_KEY = "noventra_profile_studio_draft_v1";
 
-export default function ProfileStudioPage() {
+interface ProfileStudioPageProps {
+  hideNavbar?: boolean;
+}
+
+export default function ProfileStudioPage({ hideNavbar = false }: ProfileStudioPageProps) {
   const { getToken } = useAuth();
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const router = useRouter();
@@ -334,7 +338,7 @@ export default function ProfileStudioPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col antialiased">
-      <Navbar />
+      {!hideNavbar && <Navbar />}
 
       {/* Studio Header Bar */}
       <ProfileStudioHeader

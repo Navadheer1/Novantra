@@ -61,8 +61,10 @@ function SettingsContentWrapper() {
 
   if (activeTab === "profile") {
     return (
-      <div className="space-y-4">
-        {/* Render Top Tab Bar above Profile Studio */}
+      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col antialiased">
+        <Navbar />
+
+        {/* Render Top Settings Tab Bar above Profile Studio */}
         <div className="bg-white border-b border-slate-200 sticky top-16 z-30 px-6 py-3 shadow-2xs">
           <div className="max-w-[1600px] mx-auto flex gap-2 overflow-x-auto no-scrollbar">
             {tabs.map((tb) => {
@@ -85,7 +87,7 @@ function SettingsContentWrapper() {
             })}
           </div>
         </div>
-        <ProfileStudioPage />
+        <ProfileStudioPage hideNavbar={true} />
       </div>
     );
   }
