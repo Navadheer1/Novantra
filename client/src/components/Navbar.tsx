@@ -255,36 +255,27 @@ export default function Navbar() {
                         
                         <div className="py-1">
                           {dbUser && (
-                            <>
-                              <Link
-                                href={`/profile/${dbUser.id}`}
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-                              >
-                                <User className="w-4 h-4 text-primary" /> View Profile
-                              </Link>
-                              <Link
-                                href="/settings/profile"
-                                onClick={() => setDropdownOpen(false)}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-all font-bold text-primary"
-                              >
-                                <Sparkles className="w-4 h-4 text-blue-600" /> Profile Studio
-                              </Link>
-                            </>
+                            <Link
+                              href={`/profile/${dbUser.id}`}
+                              onClick={() => setDropdownOpen(false)}
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all"
+                            >
+                              <User className="w-4 h-4 text-blue-600" /> View Profile
+                            </Link>
                           )}
                           <Link
                             href="/dashboard"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all"
                           >
-                            <LayoutDashboard className="w-4 h-4 text-primary" /> Dashboard
+                            <LayoutDashboard className="w-4 h-4 text-blue-600" /> Dashboard
                           </Link>
                           <Link
-                            href="/settings/profile"
+                            href="/settings"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all"
                           >
-                            <Settings className="w-4 h-4 text-primary" /> Settings
+                            <Settings className="w-4 h-4 text-blue-600" /> Settings
                           </Link>
                         </div>
 
