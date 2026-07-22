@@ -113,23 +113,25 @@ export function useNoventraMeet(meetingCode: string, user: { id: string; name: s
       setInWaitingRoom(false);
       setIsHost(isHost);
 
-      const parsed: ParticipantMediaState[] = admittedUsers.map((u: any) => ({
-        socketId: u.socketId,
-        userId: u.userId,
-        name: u.name,
-        role: u.role,
-        isHost: u.isHost,
-        audioEnabled: true,
-        videoEnabled: true,
-        isScreenSharing: false,
-        isHandRaised: false,
-        isSpeaking: false,
-      }));
+      const parsed: ParticipantMediaState[] = admittedUsers
+        .filter((u: any) => u.socketId !== socket.id && u.userId !== user?.id)
+        .map((u: any) => ({
+          socketId: u.socketId,
+          userId: u.userId,
+          name: u.name,
+          role: u.role,
+          isHost: u.isHost,
+          audioEnabled: true,
+          videoEnabled: true,
+          isScreenSharing: false,
+          isHandRaised: false,
+          isSpeaking: false,
+        }));
       setParticipants(parsed);
 
       // Create WebRTC offer for existing peers
       for (const u of admittedUsers) {
-        if (u.socketId !== socket.id) {
+        if (u.socketId !== socket.id && u.userId !== user?.id) {
           createPeerOffer(u.socketId, socket);
         }
       }
@@ -145,8 +147,9 @@ export function useNoventraMeet(meetingCode: string, user: { id: string; name: s
     });
 
     socket.on("user-joined", ({ socketId, userId, name, role, isHost: hostFlag }) => {
+      if (socketId === socket.id || userId === user?.id) return;
       setParticipants((prev) => {
-        if (prev.some((p) => p.socketId === socketId)) return prev;
+        if (prev.some((p) => p.socketId === socketId || p.userId === userId)) return prev;
         return [
           ...prev,
           {

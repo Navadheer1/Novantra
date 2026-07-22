@@ -1,0 +1,153 @@
+/* Global Connectivity Background CSS Module */
+
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #F8FAFC;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* Subtle background vignette & ambient glow gradients */
+.ambientGradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(147, 197, 253, 0.12) 0%, rgba(248, 250, 252, 0) 65%),
+    radial-gradient(circle at 80% 60%, rgba(96, 165, 250, 0.08) 0%, rgba(248, 250, 252, 0) 50%),
+    radial-gradient(circle at 20% 70%, rgba(59, 130, 246, 0.06) 0%, rgba(248, 250, 252, 0) 55%);
+  pointer-events: none;
+  animation: ambientBreathing 12s ease-in-out infinite alternate;
+}
+
+.svgElement {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* TopoJSON Land Shape Styling */
+.landPath {
+  fill: url(#landDotMatrixPattern);
+  stroke: #60A5FA;
+  stroke-width: 0.5px;
+  stroke-opacity: 0.25;
+  transition: opacity 0.5s ease;
+}
+
+/* Base glow layer under land path */
+.landGlowPath {
+  fill: none;
+  stroke: #93C5FD;
+  stroke-width: 1.5px;
+  stroke-opacity: 0.2;
+  filter: url(#landGlowFilter);
+}
+
+/* Animated Arc Connection Lines */
+.connectionArc {
+  fill: none;
+  stroke: url(#arcGradient);
+  stroke-width: 1.25px;
+  stroke-linecap: round;
+  stroke-dasharray: 6 8;
+  animation: dashFlow 25s linear infinite;
+  opacity: 0.45;
+}
+
+.connectionArcBackground {
+  fill: none;
+  stroke: #93C5FD;
+  stroke-width: 0.75px;
+  opacity: 0.18;
+}
+
+/* Hub Node Styles & Animations */
+.nodeCoreTier1 {
+  fill: #2563EB;
+  filter: drop-shadow(0 0 3px rgba(37, 99, 235, 0.6));
+}
+
+.nodeCoreTier2 {
+  fill: #3B82F6;
+  filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.5));
+}
+
+.nodeGlowRing {
+  fill: none;
+  stroke: #60A5FA;
+  stroke-width: 1px;
+  opacity: 0.6;
+  animation: pulseGlow 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.nodeOuterPulse {
+  fill: none;
+  stroke: #93C5FD;
+  stroke-width: 0.75px;
+  transform-origin: center;
+  animation: expandRing 4s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+/* Light Particle Animation */
+.particleHead {
+  fill: #60A5FA;
+  filter: drop-shadow(0 0 4px #2563EB);
+}
+
+.particleTail {
+  fill: #93C5FD;
+  opacity: 0.7;
+}
+
+/* Keyframe Animations */
+@keyframes dashFlow {
+  from {
+    stroke-dashoffset: 280;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    r: 3px;
+    opacity: 0.3;
+  }
+  50% {
+    r: 5.5px;
+    opacity: 0.8;
+  }
+}
+
+@keyframes expandRing {
+  0% {
+    r: 2px;
+    opacity: 0.7;
+  }
+  70% {
+    r: 10px;
+    opacity: 0.15;
+  }
+  100% {
+    r: 12px;
+    opacity: 0;
+  }
+}
+
+@keyframes ambientBreathing {
+  0% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}

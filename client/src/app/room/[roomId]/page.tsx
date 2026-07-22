@@ -1,7 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import MeetingRoomByCodePage from "@/app/communications/meeting/[meetingCode]/page";
-
-export default function RoomIdAliasPage() {
-  return <MeetingRoomByCodePage />;
+export default async function RoomIdRedirectPage({ params }: { params: Promise<{ roomId: string }> }) {
+  const resolvedParams = await params;
+  redirect(`/meet/${resolvedParams.roomId}`);
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Video, VideoOff, Sparkles, Shield, ArrowRight, ShieldAlert, AlertTriangle } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Sparkles, Shield, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PreJoinScreenProps {
@@ -61,9 +61,9 @@ export default function PreJoinScreen({ meetingCode, userName, onJoin }: PreJoin
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 antialiased">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 antialiased font-sans">
       
-      <div className="max-w-2xl w-full bg-white border border-slate-200/80 rounded-[28px] shadow-xl p-6 sm:p-8 space-y-6 text-center">
+      <div className="max-w-2xl w-full bg-white border border-slate-200/80 rounded-3xl shadow-xl p-6 sm:p-8 space-y-6 text-center">
         
         {/* Header */}
         <div className="space-y-1">
@@ -90,7 +90,7 @@ export default function PreJoinScreen({ meetingCode, userName, onJoin }: PreJoin
         )}
 
         {/* Video Preview Box */}
-        <div className="relative w-full aspect-video rounded-2xl bg-slate-900 overflow-hidden shadow-inner border border-slate-800 flex items-center justify-center">
+        <div className="relative w-full aspect-video rounded-2xl bg-slate-50 overflow-hidden border border-slate-200/80 flex items-center justify-center shadow-xs">
           {camOn && stream ? (
             <video
               ref={videoRef}
@@ -100,51 +100,51 @@ export default function PreJoinScreen({ meetingCode, userName, onJoin }: PreJoin
               className={`w-full h-full object-cover transform -scale-x-100 ${blurOn ? 'blur-md scale-105 transition-all' : ''}`}
             />
           ) : (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-20 h-20 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center font-black text-2xl text-blue-400">
+            <div className="flex flex-col items-center gap-3 p-4">
+              <div className="w-20 h-20 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center font-black text-2xl text-blue-600 shadow-xs">
                 {userName[0] || "U"}
               </div>
-              <p className="text-xs font-bold text-slate-400">
+              <p className="text-xs font-bold text-slate-500">
                 {permissionDenied ? "Camera Access Blocked" : "Camera is Turned Off"}
               </p>
             </div>
           )}
 
           {/* Quick Pre-Join Controls Floating Overlay */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-900/80 backdrop-blur-md p-2 rounded-2xl border border-white/10 shadow-lg">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/95 backdrop-blur-md p-2 rounded-2xl border border-slate-200/80 shadow-md">
             <button
               type="button"
               onClick={toggleMic}
               disabled={permissionDenied}
-              className={`p-3 rounded-xl transition-all ${
-                micOn ? "bg-white/20 text-white hover:bg-white/30" : "bg-rose-600 text-white"
+              className={`p-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                micOn ? "bg-slate-100 hover:bg-slate-200 text-slate-800" : "bg-rose-600 text-white"
               } ${permissionDenied ? "opacity-50 cursor-not-allowed" : ""}`}
               title={micOn ? "Mute Mic" : "Unmute Mic"}
             >
-              {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+              {micOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
             </button>
 
             <button
               type="button"
               onClick={toggleCam}
               disabled={permissionDenied}
-              className={`p-3 rounded-xl transition-all ${
-                camOn ? "bg-white/20 text-white hover:bg-white/30" : "bg-rose-600 text-white"
+              className={`p-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                camOn ? "bg-slate-100 hover:bg-slate-200 text-slate-800" : "bg-rose-600 text-white"
               } ${permissionDenied ? "opacity-50 cursor-not-allowed" : ""}`}
               title={camOn ? "Turn Camera Off" : "Turn Camera On"}
             >
-              {camOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+              {camOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
             </button>
 
             <button
               type="button"
               onClick={() => setBlurOn(!blurOn)}
-              className={`p-3 rounded-xl transition-all ${
-                blurOn ? "bg-blue-600 text-white" : "bg-white/20 text-white hover:bg-white/30"
+              className={`p-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                blurOn ? "bg-blue-600 text-white" : "bg-slate-100 hover:bg-slate-200 text-slate-800"
               }`}
               title="Toggle Background Blur"
             >
-              <Sparkles className="w-5 h-5" />
+              <Sparkles className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function PreJoinScreen({ meetingCode, userName, onJoin }: PreJoin
           <Button
             type="button"
             onClick={() => onJoin(micOn, camOn, blurOn)}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-xl px-8 h-12 shadow-sm flex items-center justify-center gap-2"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl px-8 h-11 shadow-sm flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>{permissionDenied ? "Join (Muted Mode)" : "Join Now"}</span>
             <ArrowRight className="w-4 h-4" />

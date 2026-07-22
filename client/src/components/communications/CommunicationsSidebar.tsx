@@ -1,22 +1,23 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
-  Video, Plus, LogIn, Calendar, MessageSquare, PhoneCall, 
-  Users, Building2, Briefcase, Code2, GraduationCap, Sparkles, 
-  Bell, Clock, ShieldCheck, Layers, FileText, Activity
+  Video, Plus, LogIn, Users, Briefcase, Code2, 
+  ShieldCheck, Layers, Clock, Settings, ChevronDown, ChevronRight, Activity, LayoutGrid
 } from "lucide-react";
 
 export type CommTab = 
-  | "overview"
   | "meetings"
-  | "quick_rooms"
-  | "pitch_mode"
-  | "startup_canvas"
-  | "due_diligence"
-  | "code_interview"
-  | "product_review"
-  | "founder_workspace";
+  | "rooms"
+  | "workspaces"
+  | "pitch_workspace"
+  | "canvas_workspace"
+  | "diligence_workspace"
+  | "code_workspace"
+  | "sprint_workspace"
+  | "product_workspace"
+  | "history"
+  | "settings";
 
 interface CommSidebarProps {
   activeTab: CommTab;
@@ -33,59 +34,65 @@ export default function CommunicationsSidebar({
   onOpenJoinMeeting,
   onOpenDiagnostic,
 }: CommSidebarProps) {
-  const primaryNav: Array<{ id: CommTab; label: string; icon: any; badge?: string }> = [
-    { id: "overview", label: "Hub Overview", icon: Sparkles },
-    { id: "meetings", label: "Meetings & Calls", icon: Video, badge: "Live" },
-    { id: "quick_rooms", label: "Ecosystem Quick Rooms", icon: Users },
+  const [workspacesExpanded, setWorkspacesExpanded] = useState(true);
+
+  const mainNav: Array<{ id: CommTab; label: string; icon: any }> = [
+    { id: "meetings", label: "Meetings", icon: Video },
+    { id: "rooms", label: "Rooms", icon: Users },
   ];
 
-  const startupModes: Array<{ id: CommTab; label: string; icon: any; badge?: string }> = [
-    { id: "pitch_mode", label: "Investor Pitch Mode", icon: Briefcase, badge: "Hot" },
-    { id: "startup_canvas", label: "Collaborative Canvas", icon: Layers },
-    { id: "due_diligence", label: "Due Diligence Room", icon: ShieldCheck, badge: "Secure" },
-    { id: "code_interview", label: "Live Code Viewer", icon: Code2 },
-    { id: "product_review", label: "Product UI Review", icon: Sparkles },
-    { id: "founder_workspace", label: "Founder Sprint Workspace", icon: Building2 },
+  const workspacesList: Array<{ id: CommTab; label: string; icon: any }> = [
+    { id: "pitch_workspace", label: "Investor Pitch", icon: Briefcase },
+    { id: "product_workspace", label: "Product Design", icon: LayoutGrid },
+    { id: "canvas_workspace", label: "Whiteboard", icon: Layers },
+    { id: "diligence_workspace", label: "Due Diligence", icon: ShieldCheck },
+    { id: "sprint_workspace", label: "Sprint Planning", icon: Clock },
+    { id: "code_workspace", label: "Code Review", icon: Code2 },
   ];
+
+  const isWorkspaceActive = [
+    "workspaces", "pitch_workspace", "canvas_workspace", 
+    "diligence_workspace", "code_workspace", "sprint_workspace", "product_workspace"
+  ].includes(activeTab);
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 bg-white border border-slate-200/80 rounded-[24px] p-4 shadow-xs space-y-4">
+    <aside className="w-full lg:w-64 shrink-0 bg-white border border-slate-200/80 rounded-3xl p-4 shadow-xs space-y-4 font-sans text-slate-800">
       
       {/* Quick Action CTAs */}
       <div className="space-y-2">
         <button
           type="button"
           onClick={onOpenNewMeeting}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl p-3 shadow-xs flex items-center justify-center gap-2 transition-all"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl p-3 shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>New Meeting</span>
+          <span>Start a Meeting</span>
         </button>
 
         <button
           type="button"
           onClick={onOpenJoinMeeting}
-          className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all border border-slate-200"
+          className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs rounded-xl p-2.5 flex items-center justify-center gap-2 transition-all border border-slate-200/80 cursor-pointer"
         >
           <LogIn className="w-4 h-4 text-blue-600" />
-          <span>Join Room</span>
+          <span>Join a Meeting</span>
         </button>
       </div>
 
       {/* Main Navigation */}
       <div className="space-y-1">
         <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
-          Navigation
+          Communications
         </div>
 
-        {primaryNav.map((item) => {
+        {mainNav.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isActive
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -95,71 +102,86 @@ export default function CommunicationsSidebar({
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
                 <span className="truncate">{item.label}</span>
               </div>
-              {item.badge && (
-                <span className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
-                  isActive ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                }`}>
-                  {item.badge}
-                </span>
-              )}
             </button>
           );
         })}
-      </div>
 
-      {/* Startup Specialized Rooms */}
-      <div className="space-y-1 pt-2 border-t border-slate-100">
-        <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
-          Startup Modes
-        </div>
-
-        {startupModes.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onSelectTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-              }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
-                <span className="truncate">{item.label}</span>
-              </div>
-              {item.badge && (
-                <span className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
-                  isActive ? "bg-white/20 text-white" : "bg-blue-50 text-blue-700 border border-blue-100"
-                }`}>
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* System Health Diagnostic Drawer Trigger */}
-      {onOpenDiagnostic && (
-        <div className="pt-2 border-t border-slate-100">
+        {/* Workspaces Group */}
+        <div className="space-y-1 pt-1">
           <button
-            type="button"
-            onClick={onOpenDiagnostic}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-amber-50/60 transition-all border border-transparent hover:border-amber-200/80"
+            onClick={() => setWorkspacesExpanded(!workspacesExpanded)}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              isWorkspaceActive
+                ? "bg-blue-50 text-blue-700 font-black border border-blue-100"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
           >
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-amber-500" />
-              <span>System Health</span>
+            <div className="flex items-center gap-2.5">
+              <LayoutGrid className="w-4 h-4 text-blue-600" />
+              <span>Workspaces</span>
             </div>
-            <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200">
-              1 Issue
-            </span>
+            {workspacesExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            )}
           </button>
+
+          {workspacesExpanded && (
+            <div className="pl-4 space-y-1">
+              {workspacesList.map((ws) => {
+                const Icon = ws.icon;
+                const isActive = activeTab === ws.id;
+                return (
+                  <button
+                    key={ws.id}
+                    onClick={() => onSelectTab(ws.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-blue-600 text-white font-bold"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-slate-400"}`} />
+                    <span className="truncate">{ws.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* History */}
+        <button
+          onClick={() => onSelectTab("history")}
+          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "history"
+              ? "bg-blue-600 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <span>History</span>
+          </div>
+        </button>
+
+        {/* Settings */}
+        <button
+          onClick={() => onSelectTab("settings")}
+          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "settings"
+              ? "bg-blue-600 text-white shadow-xs"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <Settings className="w-4 h-4 text-slate-400" />
+            <span>Settings</span>
+          </div>
+        </button>
+
+      </div>
 
     </aside>
   );

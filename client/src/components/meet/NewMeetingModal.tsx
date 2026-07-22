@@ -49,7 +49,7 @@ export default function NewMeetingModal({ isOpen, onClose }: NewMeetingModalProp
       }
 
       onClose();
-      router.push(`/communications/meeting/${code}`);
+      router.push(`/meet/${code}`);
     } catch (e: any) {
       console.error("[NewMeetingModal] Exception during creation:", e);
       setErrorMsg(e.message || "Network error creating meeting.");
