@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Search, MapPin, Briefcase, DollarSign, Target, UserPlus, Send, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -39,8 +40,7 @@ export default function InvestorsPage() {
     try {
       setLoading(true);
       const token = await getToken();
-      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const apiUrl = rawApiUrl.replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/users/investors`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
@@ -59,8 +59,7 @@ export default function InvestorsPage() {
   const handleFollow = async (investorId: string) => {
     try {
       const token = await getToken();
-      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const apiUrl = rawApiUrl.replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/users/${investorId}/follow`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {}

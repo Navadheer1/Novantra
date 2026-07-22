@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import OnboardingForm from "./OnboardingForm";
+import { getApiUrl } from "@/lib/api";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();
@@ -12,8 +13,7 @@ export default async function OnboardingPage() {
   // Check database for existing role to prevent session token delay loops
   let role: string | undefined = undefined;
   try {
-    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    const apiUrl = rawApiUrl.replace(/\/$/, "");
+    const apiUrl = getApiUrl();
     const res = await fetch(`${apiUrl}/api/users/clerk/${userId}`, {
       cache: "no-store"
     });

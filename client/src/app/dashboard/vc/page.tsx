@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { 
   Briefcase, Building2, Search, Send, Clock, CheckCircle2, XCircle, Sparkles, 
@@ -131,7 +132,6 @@ export default function VCDashboard() {
     }
   }, [clerkLoaded, clerkUser]);
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   const loadInvestorPlatformData = async () => {
     try {

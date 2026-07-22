@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Upload, Image as ImageIcon, Sparkles, Check, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getApiUrl } from "@/lib/api";
 
 interface GeneralSectionProps {
   data: {
@@ -37,7 +38,6 @@ export default function GeneralStudioSection({ data, onChange }: GeneralSectionP
     "#EC4899", // Pink
   ];
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

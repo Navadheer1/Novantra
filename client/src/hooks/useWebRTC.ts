@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
+import { getApiUrl } from "@/lib/api";
 
 interface Participant {
   socketId: string;
@@ -208,8 +209,11 @@ export function useWebRTC(meetingCode: string, userId: string, initialName: stri
       setLocalStream(stream);
 
       // Connect socket
-      const socketUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const socket = io(socketUrl);
+      const socketUrl = getApiUrl();
+      const socket = io(socketUrl, {
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+      });
       socketRef.current = socket;
 
       socket.on("connect", () => {

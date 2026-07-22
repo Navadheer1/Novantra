@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getApiUrl } from "@/lib/api";
 
 export default async function DashboardRedirect() {
   const { userId } = await auth();
@@ -11,8 +12,7 @@ export default async function DashboardRedirect() {
   // Fetch role from database via backend API to avoid Clerk session template dependency/caching
   let role: string | undefined = undefined;
   try {
-    const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-    const apiUrl = rawApiUrl.replace(/\/$/, "");
+    const apiUrl = getApiUrl();
     const res = await fetch(`${apiUrl}/api/users/clerk/${userId}`, {
       cache: "no-store"
     });

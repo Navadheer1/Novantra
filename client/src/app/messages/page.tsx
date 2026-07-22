@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -668,7 +669,7 @@ export default function MessagesPage() {
       try {
         const token = await getToken();
         if (token) {
-          const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+          const apiUrl = getApiUrl();
           const res = await fetch(`${apiUrl}/api/messages/conversations`, {
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -748,7 +749,7 @@ export default function MessagesPage() {
       }
 
       // Initialize Socket connection
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const socket = io(apiUrl, {
         withCredentials: true,
         transports: ["websocket", "polling"]
@@ -998,7 +999,7 @@ export default function MessagesPage() {
     try {
       const token = await getToken();
       if (token) {
-        const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+        const apiUrl = getApiUrl();
         fetch(`${apiUrl}/api/messages`, {
           method: "POST",
           headers: {

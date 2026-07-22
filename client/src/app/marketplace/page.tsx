@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@clerk/nextjs";
 import {
@@ -73,7 +74,7 @@ export default function MarketplacePage() {
     setError(null);
     try {
       const token = await getToken();
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       
       // Construct query parameters
       let params = new URLSearchParams();

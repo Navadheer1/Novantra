@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
+import { getApiUrl } from "@/lib/api";
 
 export interface ParticipantMediaState {
   socketId: string;
@@ -67,7 +68,6 @@ export function useNoventraMeet(meetingCode: string, user: { id: string; name: s
   const [reactions, setReactions] = useState<FloatingReaction[]>([]);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   // Initialize Local Media Stream
   const initLocalStream = async () => {

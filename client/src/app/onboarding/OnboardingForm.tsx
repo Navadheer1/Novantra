@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Building2, Users } from "lucide-react";
+import { getApiUrl } from "@/lib/api";
 
 export default function OnboardingForm() {
   const { user } = useUser();
@@ -18,8 +19,7 @@ export default function OnboardingForm() {
       console.log(`[OnboardingForm] Selecting role: ${role}`);
 
       const token = await getToken();
-      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const apiUrl = rawApiUrl.replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       
       // 1. Call role update API securely
       const roleRes = await fetch(`${apiUrl}/api/users/role`, {

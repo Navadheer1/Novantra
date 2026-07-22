@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import {
   TrendingUp, Award, Clock, Sparkles, AlertCircle, Plus,
@@ -64,7 +65,7 @@ export default function SellerDashboardPage() {
     setLoading(true);
     try {
       const token = await getToken();
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/marketplace/seller-dashboard/analytics`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
@@ -105,7 +106,7 @@ export default function SellerDashboardPage() {
     e.preventDefault();
     try {
       const token = await getToken();
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       
       const payload = {
         title,

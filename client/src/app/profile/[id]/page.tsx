@@ -5,6 +5,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -57,7 +58,6 @@ export default function ProfilePage() {
   const [isMeetingOpen, setIsMeetingOpen] = useState(false);
   const [isPitchOpen, setIsPitchOpen] = useState(false);
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   useEffect(() => {
     if (clerkLoaded && profileId) {

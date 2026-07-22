@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import {
   ShoppingCart, X, Ticket, ShieldCheck, CreditCard, ArrowLeft,
@@ -69,7 +70,7 @@ export default function CartPage() {
       }
 
       const token = await getToken();
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/marketplace/products`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
@@ -121,7 +122,7 @@ export default function CartPage() {
     setValidatingCoupon(true);
     setCouponError(null);
     try {
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/marketplace/coupons/validate?code=${couponCode.toUpperCase()}`);
 
       if (res.ok) {
@@ -156,7 +157,7 @@ export default function CartPage() {
 
     try {
       const token = await getToken();
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/marketplace/checkout`, {
         method: "POST",
         headers: {

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import {
   Star, Eye, Download, ShieldCheck, ShoppingCart, ArrowLeft,
@@ -77,7 +78,7 @@ export default function SellerStorePage({ params }: PageProps) {
     setError(null);
     try {
       const token = await getToken();
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      const apiUrl = getApiUrl();
       const res = await fetch(`${apiUrl}/api/marketplace/seller/${sellerId}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });

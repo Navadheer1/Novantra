@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { 
   Building2, MapPin, Target, DollarSign, Briefcase, 
@@ -137,7 +138,6 @@ export default function StartupDetailPage() {
     }
   }, [clerkLoaded, clerkUser, startupId]);
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   const loadStartupDataOnly = async () => {
     try {

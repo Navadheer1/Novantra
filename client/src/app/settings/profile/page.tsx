@@ -5,6 +5,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
+import { getApiUrl } from "@/lib/api";
 import ProfileStudioHeader from "@/components/studio/ProfileStudioHeader";
 import ProfileStudioSidebar, { StudioSection } from "@/components/studio/ProfileStudioSidebar";
 import ProfileLivePreview from "@/components/studio/ProfileLivePreview";
@@ -135,7 +136,6 @@ export default function ProfileStudioPage({ hideNavbar = false }: ProfileStudioP
     notifications: {} as Record<string, boolean>,
   });
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   // Load User Data & Local Draft on Mount
   useEffect(() => {

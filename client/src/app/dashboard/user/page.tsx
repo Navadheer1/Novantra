@@ -22,6 +22,8 @@ interface Request {
   };
 }
 
+import { getApiUrl } from "@/lib/api";
+
 export default function UserDashboard() {
   const { getToken } = useAuth();
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
@@ -40,7 +42,6 @@ export default function UserDashboard() {
     }
   }, [clerkLoaded, clerkUser]);
 
-  const getApiUrl = () => (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
   const loadUserData = async () => {
     try {
