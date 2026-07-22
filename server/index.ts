@@ -59,6 +59,7 @@ import messagesRouter from './routes/messages';
 import searchRouter from './routes/search';
 import exploreRouter from './routes/explore';
 import discoveryRouter from './routes/discovery';
+import marketplaceRouter from './routes/marketplace';
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -83,6 +84,7 @@ app.use('/api/messages', messagesRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/explore', exploreRouter);
 app.use('/api/discovery', discoveryRouter);
+app.use('/api/marketplace', marketplaceRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

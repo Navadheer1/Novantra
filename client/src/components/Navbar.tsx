@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth, useUser, useClerk } from "@clerk/nextjs";
-import { Home, Building2, Briefcase, Inbox, MessageSquare, LayoutDashboard, User, Settings, Menu, X, LogOut, ChevronDown, UserCheck, ShieldAlert, Compass, Sparkles } from "lucide-react";
+import { Home, Building2, Briefcase, Inbox, MessageSquare, LayoutDashboard, User, Settings, Menu, X, LogOut, ChevronDown, UserCheck, ShieldAlert, Compass, Sparkles, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getApiUrl } from "@/lib/apiConfig";
 import { resilientFetch } from "@/lib/apiClient";
@@ -65,16 +65,21 @@ export default function Navbar() {
   // UI states
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const moreDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const isAuthenticated = !!clerkUserId;
 
-  // Handle outside click to close dropdown
+  // Handle outside click to close dropdowns
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (moreDropdownRef.current && !moreDropdownRef.current.contains(event.target as Node)) {
+        setMoreDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -162,43 +167,43 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "Home Feed", href: "/feed", icon: Home },
-    { name: "Explore", href: "/explore", icon: Compass },
-    { name: "Startups", href: "/startups", icon: Building2 },
+    { name: "Home", href: "/feed", icon: Home, isCore: true },
+    { name: "Explore", href: "/explore", icon: Compass, isCore: true },
+    { name: "Startups", href: "/startups", icon: Building2, isCore: false },
     ...(dbUser?.role === "FOUNDER" || dbUser?.role === "INVESTOR" 
-      ? [{ name: "Investors", href: "/investors", icon: Briefcase }] 
+      ? [{ name: "Investors", href: "/investors", icon: Briefcase, isCore: false }] 
       : []),
-    { name: "Messages", href: "/messages", icon: MessageSquare },
-    { name: "Inbox", href: "/inbox", icon: Inbox, badge: inboxCount },
+    { name: "Shop", href: "/marketplace", icon: Store, isCore: false },
+    { name: "Messages", href: "/messages", icon: MessageSquare, isCore: false, isDesktopHide: true },
+    { name: "Inbox", href: "/inbox", icon: Inbox, badge: inboxCount, isCore: true },
   ];
+
+  const coreLinks = navLinks.filter(l => l.isCore && !l.isDesktopHide);
+  const secondaryLinks = navLinks.filter(l => !l.isCore && !l.isDesktopHide);
+  const secondaryBadgeCount = secondaryLinks.reduce((acc, curr) => acc + (curr.badge || 0), 0);
 
   return (
     <nav className="sticky top-0 z-50 bg-card border-b border-border/80 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+        <div className="flex items-center justify-between h-16 gap-2 lg:gap-4">
           {/* Logo and Brand */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-2 lg:gap-4 shrink-0">
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <span className="text-2xl font-black tracking-wider text-primary">NOVENTRA</span>
-              <span className="text-[10px] uppercase font-bold tracking-widest bg-primary/10 text-primary px-1.5 py-0.5 rounded">ECOSYSTEM</span>
+              <span className="text-xl lg:text-2xl font-black tracking-wider text-primary">NOVENTRA</span>
+              <span className="hidden sm:inline-block text-[9px] lg:text-[10px] uppercase font-bold tracking-widest bg-primary/10 text-primary px-1.5 py-0.5 rounded">ECOSYSTEM</span>
             </Link>
-
-            {/* Omnibox Search Bar */}
-            <div className="hidden md:block w-72 shrink-0 ml-2">
-              <SearchOmnibox />
-            </div>
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-1 shrink-0">
-            {isAuthenticated && navLinks.map((link) => {
+          <div className="hidden md:flex flex-1 items-center justify-center gap-0.5 lg:gap-1 min-w-0 px-4">
+            {isAuthenticated && coreLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href || pathname?.startsWith(link.href + "/");
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold shrink-0 transition-colors duration-150 ${
+                  className={`relative flex items-center gap-1 lg:gap-1.5 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold shrink-0 transition-colors duration-150 ${
                     isActive
                       ? "text-primary bg-primary/5"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -217,14 +222,105 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
+            {isAuthenticated && secondaryLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href || pathname?.startsWith(link.href + "/");
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`relative xl:flex hidden items-center gap-1 lg:gap-1.5 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm font-semibold shrink-0 transition-colors duration-150 ${
+                    isActive
+                      ? "text-primary bg-primary/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="shrink-0">{link.name}</span>
+                  {link.badge !== undefined && link.badge > 0 ? (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-black text-white ring-2 ring-card animate-pulse shrink-0">
+                      {link.badge}
+                    </span>
+                  ) : null}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Responsive More dropdown menu */}
+            {isAuthenticated && secondaryLinks.length > 0 && (
+              <div className="relative xl:hidden flex" ref={moreDropdownRef}>
+                <button
+                  onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
+                  className={`relative flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs font-semibold shrink-0 transition-colors duration-150 ${
+                    moreDropdownOpen
+                      ? "text-primary bg-primary/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <span>More</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${moreDropdownOpen ? "rotate-180" : ""}`} />
+                  {secondaryBadgeCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-destructive px-1 text-[8px] font-black text-white ring-2 ring-card animate-pulse shrink-0">
+                      {secondaryBadgeCount}
+                    </span>
+                  )}
+                </button>
+
+                {moreDropdownOpen && (
+                  <div className="absolute left-1/2 -translate-x-1/2 mt-10 w-48 rounded-xl border border-border/80 bg-card shadow-lg py-1.5 z-50 animate-in fade-in-50 slide-in-from-top-2 duration-150">
+                    {secondaryLinks.map((link) => {
+                      const Icon = link.icon;
+                      const isActive = pathname === link.href || pathname?.startsWith(link.href + "/");
+                      return (
+                        <Link
+                          key={link.name}
+                          href={link.href}
+                          onClick={() => setMoreDropdownOpen(false)}
+                          className={`flex items-center justify-between px-4 py-2 text-xs font-semibold transition-colors ${
+                            isActive
+                              ? "text-primary bg-primary/5"
+                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon className="w-4 h-4 shrink-0 text-muted-foreground" />
+                            <span>{link.name}</span>
+                          </div>
+                          {link.badge !== undefined && link.badge > 0 && (
+                            <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-black text-white shrink-0">
+                              {link.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Desktop Auth Controls / User Menu Dropdown */}
-          <div className="hidden md:flex items-center gap-4 shrink-0 justify-end min-w-[120px]">
+          <div className="hidden md:flex items-center gap-2 lg:gap-4 shrink-0 justify-end min-w-0">
+            {/* Omnibox Search Bar */}
+            <div className="hidden md:block w-36 lg:w-56 xl:w-64 min-w-0 shrink">
+              <SearchOmnibox />
+            </div>
             {clerkLoaded && (
               <>
                 {isAuthenticated ? (
                   <>
+                    <Link
+                      href="/messages"
+                      className="relative group flex items-center justify-center w-9 h-9 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-150 border border-slate-200/60 shrink-0"
+                      title="Messages Workspace"
+                    >
+                      <MessageSquare className="w-4.5 h-4.5 group-hover:scale-110 transition-transform text-blue-600" />
+                    </Link>
                     <NavbarMeetButton />
                     <div className="relative" ref={dropdownRef}>
                     <button

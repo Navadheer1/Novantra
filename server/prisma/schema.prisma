@@ -89,6 +89,13 @@ model User {
   podcastBookmarks   PodcastBookmark[]
   podcastComments    PodcastComment[]
 
+  marketplaceSeller  MarketplaceSeller?
+  buyerOrders        MarketplaceOrder[] @relation("BuyerOrders")
+  marketplaceReviews MarketplaceReview[]
+  marketplaceWishlists MarketplaceWishlist[]
+  marketplaceCart    MarketplaceCart?
+  marketplaceFollowers MarketplaceFollower[]
+
   @@index([name])
   @@index([role])
   @@index([location])
@@ -658,4 +665,183 @@ model PodcastComment {
   createdAt      DateTime       @default(now())
 
   @@index([podcastId])
+}
+
+model MarketplaceSeller {
+  id             String                @id @default(uuid())
+  userId         String                @unique
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName      String
+  logoUrl        String?
+  bannerUrl      String?
+  description    String?
+  website        String?
+  socialLinks    Json?
+  isVerified     Boolean               @default(false)
+  trustScore     Int                   @default(100)
+  revenueTotal   Float                 @default(0.0)
+  createdAt      DateTime              @default(now())
+  
+  products       MarketplaceProduct[]
+  orders         MarketplaceOrder[]    @relation("SellerOrders")
+  followers      MarketplaceFollower[]
+  analytics      MarketplaceAnalytics[]
+}
+
+model MarketplaceProduct {
+  id             String                @id @default(uuid())
+  sellerId       String
+  seller         MarketplaceSeller     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  category       String
+  tags           String[]
+  price          Float
+  originalPrice  Float?
+  type           String
+  status         String
+  version        String                @default("1.0.0")
+  thumbnailUrl   String
+  screenshots    String[]
+  videoDemoUrl   String?
+  techStack      String[]
+  features       String[]
+  installGuide   String?
+  licensing      String
+  fileUrl        String?
+  externalUrl    String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  reviews        MarketplaceReview[]
+  downloads      MarketplaceDownload[]
+  licenses       MarketplaceLicense[]
+  wishlists      MarketplaceWishlist[]
+  services       MarketplaceService[]
+  orderItems     MarketplaceOrderItem[]
+
+  @@index([category])
+  @@index([sellerId])
+}
+
+model MarketplaceService {
+  id             String                @id @default(uuid())
+  productId      String                @unique
+  product        MarketplaceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  basicPkg       Json
+  standardPkg    Json
+  premiumPkg     Json
+  faqs           Json
+}
+
+model MarketplaceOrderItem {
+  id             String                @id @default(uuid())
+  orderId        String
+  order          MarketplaceOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        MarketplaceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price          Float
+  licenseKey     String?
+}
+
+model MarketplaceOrder {
+  id             String                @id @default(uuid())
+  buyerId        String
+  buyer          User                  @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId       String
+  seller         MarketplaceSeller     @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Cascade)
+  totalAmount    Float
+  taxAmount      Float                 @default(0.0)
+  couponCode     String?
+  status         String
+  invoiceUrl     String?
+  createdAt      DateTime              @default(now())
+
+  items          MarketplaceOrderItem[]
+  downloads      MarketplaceDownload[]
+  licenses       MarketplaceLicense[]
+}
+
+model MarketplaceReview {
+  id             String                @id @default(uuid())
+  productId      String
+  product        MarketplaceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating         Int
+  comment        String
+  sellerReply    String?
+  createdAt      DateTime              @default(now())
+
+  @@index([productId])
+}
+
+model MarketplaceWishlist {
+  id             String                @id @default(uuid())
+  userId         String
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId      String
+  product        MarketplaceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt      DateTime              @default(now())
+
+  @@unique([userId, productId])
+}
+
+model MarketplaceCart {
+  id             String                @id @default(uuid())
+  userId         String                @unique
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items          Json
+}
+
+model MarketplaceCoupon {
+  id             String                @id @default(uuid())
+  code           String                @unique
+  discountPct    Int
+  expiryDate     DateTime
+  isActive       Boolean               @default(true)
+}
+
+model MarketplaceDownload {
+  id             String                @id @default(uuid())
+  productId      String
+  product        MarketplaceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId        String
+  order          MarketplaceOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  downloadCount  Int                   @default(1)
+  createdAt      DateTime              @default(now())
+}
+
+model MarketplaceLicense {
+  id             String                @id @default(uuid())
+  productId      String
+  product        MarketplaceProduct    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderId        String
+  order          MarketplaceOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  licenseKey     String                @unique
+  licenseType    String
+  isActive       Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+}
+
+model MarketplaceFollower {
+  id             String                @id @default(uuid())
+  sellerId       String
+  seller         MarketplaceSeller     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime              @default(now())
+
+  @@unique([sellerId, userId])
+}
+
+model MarketplaceAnalytics {
+  id             String                @id @default(uuid())
+  sellerId       String
+  seller         MarketplaceSeller     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  revenue        Float
+  ordersCount    Int
+  viewsCount     Int
+  downloadsCount Int
+  date           DateTime              @default(now())
 }
