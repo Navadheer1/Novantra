@@ -58,6 +58,7 @@ import postsRouter from './routes/posts';
 import messagesRouter from './routes/messages';
 import searchRouter from './routes/search';
 import exploreRouter from './routes/explore';
+import discoveryRouter from './routes/discovery';
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -81,6 +82,7 @@ app.use('/api/posts', postsRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/explore', exploreRouter);
+app.use('/api/discovery', discoveryRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
@@ -91,6 +93,7 @@ app.get('/api/health', (req, res) => {
 });
 
 import { registerMeetingHandlers } from './socket/meetingHandler';
+import { registerMessageHandlers } from './socket/messageHandler';
 
 // Socket.io connection
 io.on('connection', (socket) => {
@@ -104,6 +107,7 @@ io.on('connection', (socket) => {
 });
 
 registerMeetingHandlers(io);
+registerMessageHandlers(io);
 
 const PORT = process.env.PORT || 5000;
 

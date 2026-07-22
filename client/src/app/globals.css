@@ -184,3 +184,16 @@
     font-weight: 600 !important;
   }
 }
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spinSlow {
+  animation: spinSlow 25s linear infinite;
+}

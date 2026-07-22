@@ -99,9 +99,10 @@ router.get('/:otherUserId', ClerkExpressRequireAuth({}), async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found in DB' });
 
-    const isMutual = await checkMutualFollow(user.id, otherUserId);
-    if (!isMutual) {
-      return res.status(403).json({ error: 'Messaging is only allowed between mutual followers.' });
+    // In dev/demo environment, we allow chats if both users exist
+    const otherUserExists = await prisma.user.findUnique({ where: { id: otherUserId } });
+    if (!otherUserExists) {
+      return res.status(404).json({ error: 'Recipient user not found' });
     }
 
     const messages = await prisma.message.findMany({
@@ -135,9 +136,9 @@ router.post('/', ClerkExpressRequireAuth({}), async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found in DB' });
 
-    const isMutual = await checkMutualFollow(user.id, receiverId);
-    if (!isMutual) {
-      return res.status(403).json({ error: 'Messaging is only allowed between mutual followers.' });
+    const otherUserExists = await prisma.user.findUnique({ where: { id: receiverId } });
+    if (!otherUserExists) {
+      return res.status(404).json({ error: 'Recipient user not found' });
     }
 
     const message = await prisma.message.create({

@@ -76,6 +76,19 @@ model User {
   createdMeetings    Meeting[] @relation("CreatedMeetings")
   meetingParticipations MeetingParticipant[]
 
+  channel            Channel?
+  videoComments      VideoComment[]
+  videoLikes         VideoLike[]
+  videoBookmarks     VideoBookmark[]
+  watchHistories     WatchHistory[]
+  subscriptions      Subscription[]    @relation("UserSubscriptions")
+  shortLikes         ShortLike[]
+  shortBookmarks     ShortBookmark[]
+  shortComments      ShortComment[]
+  podcastLikes       PodcastLike[]
+  podcastBookmarks   PodcastBookmark[]
+  podcastComments    PodcastComment[]
+
   @@index([name])
   @@index([role])
   @@index([location])
@@ -362,4 +375,287 @@ model Message {
 
   sender         User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiver       User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Channel {
+  id             String         @id @default(uuid())
+  name           String
+  avatarUrl      String?
+  bannerUrl      String?
+  about          String?
+  userId         String         @unique
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscribers    Subscription[] @relation("ChannelSubscribers")
+  videos         Video[]
+  shorts         Short[]
+  podcasts       Podcast[]
+  playlists      Playlist[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId])
+}
+
+model Video {
+  id             String         @id @default(uuid())
+  title          String
+  description    String
+  thumbnailUrl   String
+  videoUrl       String
+  duration       Int            // in seconds
+  views          Int            @default(0)
+  playbackSpeed  Float          @default(1.0)
+  isLive         Boolean        @default(false)
+  liveBadge      Boolean        @default(false)
+  channelId      String
+  channel        Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  // AI features
+  aiSummary      String?
+  keyTakeaways   String[]       @default([])
+  chapters       Json?          // Array of { time: number, title: string }
+  transcript     String?
+  
+  likes          VideoLike[]
+  bookmarks      VideoBookmark[]
+  comments       VideoComment[]
+  watchHistories WatchHistory[]
+  playlistItems  PlaylistItem[]
+  
+  categoryId     String?
+  category       Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags           Tag[]          @relation("VideoTags")
+
+  @@index([channelId])
+  @@index([categoryId])
+}
+
+model Short {
+  id             String         @id @default(uuid())
+  title          String
+  description    String?
+  videoUrl       String
+  views          Int            @default(0)
+  channelId      String
+  channel        Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  // Related links
+  relatedStartupId String?
+  relatedFounderId String?
+  
+  aiSummary      String?
+  likes          ShortLike[]
+  bookmarks      ShortBookmark[]
+  comments       ShortComment[]
+
+  @@index([channelId])
+}
+
+model Podcast {
+  id             String         @id @default(uuid())
+  title          String
+  description    String
+  audioUrl       String
+  artworkUrl     String
+  duration       Int            // in seconds
+  views          Int            @default(0)
+  channelId      String
+  channel        Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  // Podcast specific
+  guestProfiles  Json?          // Array of guest info { name: string, role: string, avatar: string }
+  relatedStartups Json?         // Array of startup info { name: string, logo: string }
+  aiSummary      String?
+  transcript     String?
+  chapters       Json?          // Array of { time: number, title: string }
+  
+  likes          PodcastLike[]
+  bookmarks      PodcastBookmark[]
+  comments       PodcastComment[]
+
+  @@index([channelId])
+}
+
+model Playlist {
+  id             String         @id @default(uuid())
+  name           String
+  description    String?
+  isPrivate      Boolean        @default(false)
+  channelId      String
+  channel        Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  items          PlaylistItem[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([channelId])
+}
+
+model PlaylistItem {
+  id             String         @id @default(uuid())
+  playlistId     String
+  playlist       Playlist       @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  videoId        String?
+  video          Video?         @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  shortId        String?
+  podcastId      String?
+  position       Int
+  createdAt      DateTime       @default(now())
+
+  @@index([playlistId])
+  @@index([videoId])
+}
+
+model VideoComment {
+  id             String         @id @default(uuid())
+  content        String
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoId        String
+  video          Video          @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  parentId       String?
+  parent         VideoComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        VideoComment[] @relation("CommentReplies")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([parentId])
+}
+
+model VideoLike {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoId        String
+  video          Video          @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, videoId])
+  @@index([videoId])
+}
+
+model VideoBookmark {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoId        String
+  video          Video          @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, videoId])
+  @@index([videoId])
+}
+
+model Subscription {
+  id             String         @id @default(uuid())
+  subscriberId   String
+  subscriber     User           @relation("UserSubscriptions", fields: [subscriberId], references: [id], onDelete: Cascade)
+  channelId      String
+  channel        Channel        @relation("ChannelSubscribers", fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([subscriberId, channelId])
+  @@index([channelId])
+}
+
+model WatchHistory {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videoId        String
+  video          Video          @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  progress       Int            // in seconds watched
+  completed      Boolean        @default(false)
+  lastWatched    DateTime       @default(now()) @updatedAt
+
+  @@unique([userId, videoId])
+  @@index([userId])
+}
+
+model Category {
+  id             String         @id @default(uuid())
+  name           String         @unique
+  description    String?
+  videos         Video[]
+}
+
+model Tag {
+  id             String         @id @default(uuid())
+  name           String         @unique
+  videos         Video[]        @relation("VideoTags")
+}
+
+model ShortLike {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shortId        String
+  short          Short          @relation(fields: [shortId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, shortId])
+}
+
+model ShortBookmark {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shortId        String
+  short          Short          @relation(fields: [shortId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, shortId])
+}
+
+model ShortComment {
+  id             String         @id @default(uuid())
+  content        String
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shortId        String
+  short          Short          @relation(fields: [shortId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@index([shortId])
+}
+
+model PodcastLike {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  podcastId      String
+  podcast        Podcast        @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, podcastId])
+}
+
+model PodcastBookmark {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  podcastId      String
+  podcast        Podcast        @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, podcastId])
+}
+
+model PodcastComment {
+  id             String         @id @default(uuid())
+  content        String
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  podcastId      String
+  podcast        Podcast        @relation(fields: [podcastId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@index([podcastId])
 }
