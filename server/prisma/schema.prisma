@@ -96,6 +96,12 @@ model User {
   marketplaceCart    MarketplaceCart?
   marketplaceFollowers MarketplaceFollower[]
 
+  investorProfile        InvestorProfile?       @relation("UserInvestorProfile")
+  savedStartups          SavedStartup[]         @relation("UserSavedStartups")
+  pipelineItems          InvestorPipeline[]     @relation("UserPipelineItems")
+  portfolioInvestments   Investment[]           @relation("UserPortfolioInvestments")
+  investorNotes          InvestorNote[]         @relation("UserInvestorNotes")
+
   @@index([name])
   @@index([role])
   @@index([location])
@@ -123,6 +129,11 @@ model Startup {
   connectedVCs   ConnectedVC[]
   meetings       Meeting[]
   posts          Post[]
+
+  savedByInvestors       SavedStartup[]         @relation("SavedStartupRelation")
+  pipelineEntries        InvestorPipeline[]     @relation("PipelineStartupRelation")
+  portfolioInvestments   Investment[]           @relation("PortfolioStartupRelation")
+  investorNotes          InvestorNote[]         @relation("NoteStartupRelation")
 
   @@index([name])
   @@index([industry])
@@ -845,3 +856,100 @@ model MarketplaceAnalytics {
   downloadsCount Int
   date           DateTime              @default(now())
 }
+
+model InvestorProfile {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation("UserInvestorProfile", fields: [userId], references: [id], onDelete: Cascade)
+  investmentThesis     String?
+  preferredSectors     String[] @default([])
+  preferredStages      String[] @default([])
+  ticketSizeMin        Float?   @default(25000)
+  ticketSizeMax        Float?   @default(500000)
+  targetGeographies    String[] @default([])
+  totalCapitalInvested Float    @default(0.0)
+  portfolioCount       Int      @default(0)
+  bio                  String?
+  openToColdPitches     Boolean  @default(true)
+  website              String?
+  linkedin             String?
+  isVerified           Boolean  @default(true)
+  availability         String   @default("Active Investing")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SavedStartup {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation("UserSavedStartups", fields: [userId], references: [id], onDelete: Cascade)
+  startupId      String
+  startup        Startup  @relation("SavedStartupRelation", fields: [startupId], references: [id], onDelete: Cascade)
+  collectionName String   @default("Favorites")
+  tags           String[] @default([])
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, startupId])
+  @@index([userId])
+  @@index([startupId])
+}
+
+model InvestorPipeline {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation("UserPipelineItems", fields: [userId], references: [id], onDelete: Cascade)
+  startupId    String
+  startup      Startup  @relation("PipelineStartupRelation", fields: [startupId], references: [id], onDelete: Cascade)
+  stage        String   @default("NEW") // NEW | CONTACTED | MEETING_SCHEDULED | DUE_DILIGENCE | NEGOTIATION | COMMITTED | INVESTED | PASSED
+  priority     String   @default("MEDIUM") // HIGH | MEDIUM | LOW
+  targetTicket Float?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, startupId])
+  @@index([userId])
+  @@index([stage])
+}
+
+model Investment {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation("UserPortfolioInvestments", fields: [userId], references: [id], onDelete: Cascade)
+  startupId        String
+  startup          Startup  @relation("PortfolioStartupRelation", fields: [startupId], references: [id], onDelete: Cascade)
+  amountInvested   Float
+  currentValuation Float
+  entryValuation   Float
+  ownershipPct     Float
+  entryStage       String   @default("SEED")
+  investedAt       DateTime @default(now())
+  status           String   @default("ACTIVE") // ACTIVE | EXITED | WRITTEN_OFF
+  healthScore      Int      @default(92)
+  nextMilestone    String?
+  monthlyReports   Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@index([startupId])
+}
+
+model InvestorNote {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("UserInvestorNotes", fields: [userId], references: [id], onDelete: Cascade)
+  startupId String
+  startup   Startup  @relation("NoteStartupRelation", fields: [startupId], references: [id], onDelete: Cascade)
+  content   String
+  isPrivate Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([startupId])
+}
+
