@@ -35,9 +35,14 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     }
   }, [setOfflineMode]);
 
-  // Initial startup health check (Runs ONLY ONCE on app load)
+  // Initial startup health check & periodic polling when offline
   useEffect(() => {
     checkHealth();
+
+    // Auto-retry connection every 10 seconds to auto-recover when server starts
+    const interval = setInterval(() => {
+      checkHealth();
+    }, 10000);
 
     const handleOnline = () => {
       checkHealth();
@@ -50,6 +55,7 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     window.addEventListener("offline", handleOffline);
 
     return () => {
+      clearInterval(interval);
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
