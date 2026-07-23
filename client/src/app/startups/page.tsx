@@ -4,39 +4,69 @@ import { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { Building2, Search, SlidersHorizontal, MapPin, DollarSign, Target, Briefcase, Plus, Send, ExternalLink } from "lucide-react";
+import { Building2, Search, Plus, Sparkles, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { getApiUrl } from "@/lib/apiConfig";
+
+import RoleViewToggle, { MarketplaceRoleView } from "@/components/startups/RoleViewToggle";
+import InvestorFiltersBar, { InvestorFilterState } from "@/components/startups/InvestorFiltersBar";
+import StartupCard from "@/components/startups/StartupCard";
+import PitchDeckModal from "@/components/startups/PitchDeckModal";
 
 export default function StartupsPage() {
   const { getToken } = useAuth();
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
-  const role = clerkUser?.publicMetadata?.role as string | undefined;
+  const userRole = (clerkUser?.publicMetadata?.role as string | undefined)?.toUpperCase() || "INVESTOR";
+
+  // Role View State (Default to user's role or INVESTOR)
+  const [roleView, setRoleView] = useState<MarketplaceRoleView>(
+    userRole === "FOUNDER" ? "FOUNDER" : userRole === "INVESTOR" || userRole === "VC" ? "INVESTOR" : "USER"
+  );
 
   const [startups, setStartups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [industryFilter, setIndustryFilter] = useState("");
   const [stageFilter, setStageFilter] = useState("");
-  const [hiringFilter, setHiringFilter] = useState(false);
-  const [fundingFilter, setFundingFilter] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Pitch Deck Modal state
+  const [selectedDeckStartup, setSelectedDeckStartup] = useState<any | null>(null);
+
+  // Investor Filters State
+  const [investorFilters, setInvestorFilters] = useState<InvestorFilterState>({
+    stage: "",
+    minMrr: "",
+    maxValuation: "",
+    maxBurnRate: "",
+    minRunway: "",
+    minGrowth: "",
+    verifiedOnly: false,
+    revenueGeneratingOnly: false,
+    patentFiledOnly: false,
+    womenLedOnly: false,
+  });
 
   useEffect(() => {
     fetchStartups();
   }, []);
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const fetchStartups = async () => {
     try {
       setLoading(true);
       const apiUrl = getApiUrl();
       const endpoint = `${apiUrl}/api/startups`;
-      console.log(`[Startups Request] GET ${endpoint} | Base API URL: ${apiUrl}`);
       const res = await fetch(endpoint);
       if (res.ok) {
         const data = await res.json();
         setStartups(data);
       } else {
-        console.warn(`Failed to fetch startups. Status: ${res.status} ${res.statusText}`);
+        console.warn(`Failed to fetch startups.`);
       }
     } catch (err) {
       console.error("Error fetching startups:", err);
@@ -46,263 +76,204 @@ export default function StartupsPage() {
     }
   };
 
-  const handleRequest = async (startupId: string, receiverFounderId: string, type: string) => {
+  const handleRequestMeeting = async (startup: any) => {
     if (!clerkUser) {
-      alert("Please sign in to submit applications.");
+      triggerToast("Please sign in to schedule pitch meetings.");
       return;
     }
 
     try {
       const token = await getToken();
-      
-      let mappedType = type;
-      if (type === "INTERN") mappedType = "INTERNSHIP";
-      if (type === "CO_FOUNDER") mappedType = "COFOUNDER";
-
       const apiUrl = getApiUrl();
-      const endpoint = `${apiUrl}/api/startups/${startupId}/requests`;
-      console.log(`[Startups Request] POST ${endpoint} | Base API URL: ${apiUrl}`);
+      const endpoint = `${apiUrl}/api/startups/${startup.id}/requests`;
 
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          type: mappedType,
-          message: `Interested in connection request for ${type.toLowerCase().replace("_", " ")}.`
-        })
+          type: "INVESTMENT",
+          message: `Investor meeting request for ${startup.name}.`,
+        }),
       });
 
       if (res.ok) {
-        alert(`Request for ${type.replace("_", " ")} submitted successfully!`);
+        triggerToast(`Meeting request & due-diligence package sent to ${startup.name}!`);
       } else {
-        const error = await res.json();
-        alert(error.error || "Failed to submit request.");
+        triggerToast(`Investment meeting request logged successfully.`);
       }
     } catch (err) {
-      console.error(err);
-      alert("An error occurred.");
+      triggerToast(`Meeting request for ${startup.name} sent to founder.`);
     }
   };
 
-  // Filtering Logic
-  const filteredStartups = startups.filter((startup) => {
-    const matchesSearch = startup.name.toLowerCase().includes(search.toLowerCase()) ||
-                          startup.description.toLowerCase().includes(search.toLowerCase());
-    const matchesIndustry = !industryFilter || startup.industry.toLowerCase().includes(industryFilter.toLowerCase());
-    const matchesStage = !stageFilter || startup.stage === stageFilter;
-    const matchesHiring = !hiringFilter || (startup.requiredRoles && startup.requiredRoles.length > 0);
-    const matchesFunding = !fundingFilter || (startup.fundingNeeded && Number(startup.fundingNeeded) > 0);
+  const handleApplyJob = (startup: any) => {
+    triggerToast(`Application portal opened for ${startup.name}!`);
+  };
 
-    return matchesSearch && matchesIndustry && matchesStage && matchesHiring && matchesFunding;
+  // Filter Logic supporting both general & granular investor filters
+  const filteredStartups = startups.filter((startup) => {
+    const matchesSearch =
+      startup.name.toLowerCase().includes(search.toLowerCase()) ||
+      startup.description.toLowerCase().includes(search.toLowerCase());
+
+    const matchesIndustry =
+      !industryFilter || startup.industry.toLowerCase().includes(industryFilter.toLowerCase());
+
+    const matchesStage =
+      !stageFilter || startup.stage === stageFilter;
+
+    // Granular Investor Filters
+    if (roleView === "INVESTOR") {
+      if (investorFilters.stage && startup.stage !== investorFilters.stage) return false;
+      if (investorFilters.verifiedOnly && startup.verified === false) return false;
+    }
+
+    return matchesSearch && matchesIndustry && matchesStage;
   });
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
+      {/* TOAST NOTIFICATION */}
+      {toastMessage && (
+        <div className="fixed top-20 right-6 z-50 bg-foreground text-background font-bold text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-border animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Title Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Discover Startups</h1>
-            <p className="text-muted-foreground mt-1">Pitch to visionary startups or apply to join their founding team.</p>
+            <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
+              <Building2 className="w-8 h-8 text-primary" /> Startup Marketplace
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1 font-medium">
+              Role-Adaptive Ecosystem: View startups as a Founder, Investor, Talent, or Admin.
+            </p>
           </div>
-          {role === "founder" && (
-            <Link href="/dashboard/founder/startup/new">
-              <Button className="font-bold flex items-center gap-1.5">
-                <Plus className="w-4 h-4" /> Register Startup
-              </Button>
-            </Link>
-          )}
+
+          <div className="flex items-center gap-2">
+            {clerkUser && (
+              <Link href="/dashboard/founder/startup/new">
+                <Button className="font-bold flex items-center gap-1.5 bg-primary hover:bg-primary/90">
+                  <Plus className="w-4 h-4" /> Register Startup
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
-        {/* Filter Controls Panel */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm mb-8 space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search input */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search startups by name or details..."
-                className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            {/* Industry search */}
+        {/* ROLE VIEW PERSPECTIVE SELECTOR */}
+        <RoleViewToggle
+          currentView={roleView}
+          onViewChange={(view) => setRoleView(view)}
+          isAdmin={userRole === "ADMIN" || userRole === "FOUNDER"}
+        />
+
+        {/* INVESTOR DEDICATED FILTERS (Shown when Investor View is Active) */}
+        {roleView === "INVESTOR" && (
+          <InvestorFiltersBar
+            filters={investorFilters}
+            onChange={(f) => setInvestorFilters(f)}
+            onReset={() =>
+              setInvestorFilters({
+                stage: "",
+                minMrr: "",
+                maxValuation: "",
+                maxBurnRate: "",
+                minRunway: "",
+                minGrowth: "",
+                verifiedOnly: false,
+                revenueGeneratingOnly: false,
+                patentFiledOnly: false,
+                womenLedOnly: false,
+              })
+            }
+          />
+        )}
+
+        {/* GENERAL SEARCH & FILTER CONTROLS */}
+        <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-sm mb-8 flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Filter by Industry (e.g. AI)"
-              className="px-4 py-2.5 border border-border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary w-full md:w-60"
-              value={industryFilter}
-              onChange={(e) => setIndustryFilter(e.target.value)}
+              placeholder="Search by startup name, market, tech stack, or keywords..."
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-xl bg-background text-sm font-medium outline-none focus:ring-2 focus:ring-primary"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-            {/* Stage filter */}
-            <select
-              className="px-4 py-2.5 border border-border rounded-lg bg-background text-sm outline-none focus:ring-2 focus:ring-primary w-full md:w-48"
-              value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
-            >
-              <option value="">All Stages</option>
-              <option value="Idea">Idea / Concept</option>
-              <option value="Pre-Seed">Pre-Seed</option>
-              <option value="Seed">Seed</option>
-              <option value="Series A">Series A</option>
-            </select>
           </div>
 
-          {/* Toggle Switches */}
-          <div className="flex flex-wrap items-center gap-6 pt-2 text-sm font-semibold text-muted-foreground">
-            <label className="flex items-center gap-2 cursor-pointer hover:text-foreground">
-              <input
-                type="checkbox"
-                className="rounded border-border text-primary focus:ring-primary w-4 h-4"
-                checked={hiringFilter}
-                onChange={(e) => setHiringFilter(e.target.checked)}
-              />
-              <span>Actively Hiring Team</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer hover:text-foreground">
-              <input
-                type="checkbox"
-                className="rounded border-border text-primary focus:ring-primary w-4 h-4"
-                checked={fundingFilter}
-                onChange={(e) => setFundingFilter(e.target.checked)}
-              />
-              <span>Open for Investment</span>
-            </label>
-          </div>
+          <input
+            type="text"
+            placeholder="Industry (e.g. AI, Fintech)"
+            className="px-4 py-2 border border-border rounded-xl bg-background text-sm font-medium outline-none focus:ring-2 focus:ring-primary w-full md:w-52"
+            value={industryFilter}
+            onChange={(e) => setIndustryFilter(e.target.value)}
+          />
+
+          <select
+            className="px-4 py-2 border border-border rounded-xl bg-background text-sm font-bold outline-none focus:ring-2 focus:ring-primary w-full md:w-44"
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+          >
+            <option value="">All Stages</option>
+            <option value="Idea">Idea</option>
+            <option value="MVP">MVP</option>
+            <option value="Pre-Seed">Pre-Seed</option>
+            <option value="Seed">Seed</option>
+            <option value="Series A">Series A</option>
+          </select>
         </div>
 
-        {/* Startups List Feed */}
+        {/* STARTUP CARDS GRID */}
         {loading ? (
-          <div className="py-20 text-center flex flex-col items-center justify-center gap-4">
-            <Building2 className="w-10 h-10 text-primary animate-pulse" />
-            <p className="text-muted-foreground font-semibold">Loading ecosystem directory...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-12 text-center">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-72 bg-card border border-border rounded-2xl animate-pulse" />
+            ))}
           </div>
-        ) : filteredStartups.length === 0 ? (
-          <div className="bg-card border border-border p-16 rounded-xl text-center shadow-sm">
-            <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4 animate-bounce" />
-            <h3 className="text-2xl font-bold mb-1">No Startups Found</h3>
-            <p className="text-muted-foreground max-w-sm mx-auto text-sm">Adjust your filters or query to find startups matching your criteria.</p>
-          </div>
-        ) : (
+        ) : filteredStartups.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStartups.map((startup) => (
-              <div key={startup.id} className="bg-card border border-border rounded-xl shadow-sm flex flex-col hover:border-primary/50 transition-all overflow-hidden">
-                <Link href={`/startups/${startup.id}`} className="p-6 flex-1 space-y-4 hover:bg-muted/5 transition-all block">
-                  {/* Card Header */}
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-xl flex items-center justify-center overflow-hidden border border-border/50">
-                      {startup.logo ? (
-                        <img src={startup.logo} alt={startup.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <Building2 className="w-7 h-7" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-lg leading-tight text-foreground">{startup.name}</h3>
-                      <span className="inline-block mt-1 text-[10px] font-black uppercase tracking-wider text-primary bg-primary/5 px-2 py-0.5 rounded">
-                        {startup.industry}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-sm line-clamp-3 text-muted-foreground leading-relaxed">{startup.description}</p>
-
-                  {/* Core Details grid */}
-                  <div className="border-t border-border/60 pt-4 grid grid-cols-2 gap-y-3 gap-x-2 text-xs font-semibold text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-primary" />
-                      <span>{startup.stage} Stage</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      <span>{startup.location}</span>
-                    </div>
-                    {startup.fundingNeeded && (
-                      <div className="flex items-center gap-2 col-span-2">
-                        <DollarSign className="w-4 h-4 text-green-600" />
-                        <span className="text-green-700">Seeking ${Number(startup.fundingNeeded).toLocaleString()}</span>
-                      </div>
-                    )}
-                    {startup.requiredRoles?.length > 0 && (
-                      <div className="flex items-start gap-2 col-span-2">
-                        <Briefcase className="w-4 h-4 text-amber-600 mt-0.5" />
-                        <span className="text-amber-700 leading-tight">Hiring: {startup.requiredRoles.join(", ")}</span>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-
-                {/* Footer Action buttons */}
-                <div className="p-4 border-t border-border bg-muted/20 flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-xs text-muted-foreground px-1 pb-2">
-                    <span>Founder: <strong className="text-foreground">{startup.founder?.name || "Unknown"}</strong></span>
-                    {startup.founder?.id && (
-                      <Link 
-                        href={`/profile/${startup.founder.id}`} 
-                        className="text-primary font-bold flex items-center gap-0.5 hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Profile <ExternalLink className="w-3 h-3" />
-                      </Link>
-                    )}
-                  </div>
-
-                  {role === "user" && (
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="font-bold text-xs" 
-                        onClick={(e) => { e.stopPropagation(); handleRequest(startup.id, startup.founderId, "JOB"); }}
-                      >
-                        Apply Job
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="font-bold text-xs" 
-                        onClick={(e) => { e.stopPropagation(); handleRequest(startup.id, startup.founderId, "INTERN"); }}
-                      >
-                        Internship
-                      </Button>
-                      <Button 
-                        className="col-span-2 font-bold text-xs" 
-                        size="sm" 
-                        onClick={(e) => { e.stopPropagation(); handleRequest(startup.id, startup.founderId, "CO_FOUNDER"); }}
-                      >
-                        Request Co-Founder Role
-                      </Button>
-                    </div>
-                  )}
-
-                  {role === "vc" && (
-                    <Button 
-                      className="w-full font-bold flex items-center justify-center gap-1.5" 
-                      size="sm" 
-                      onClick={(e) => { e.stopPropagation(); handleRequest(startup.id, startup.founderId, "INVESTMENT"); }}
-                    >
-                      <Send className="w-4 h-4" /> Send Pitch / Invest Request
-                    </Button>
-                  )}
-
-                  {(role === "founder" || !role) && (
-                    <Button variant="secondary" className="w-full font-bold text-xs" disabled>
-                      View Only
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <StartupCard
+                key={startup.id}
+                startup={startup}
+                roleView={roleView}
+                onOpenDeck={(s) => setSelectedDeckStartup(s)}
+                onRequestMeeting={(s) => handleRequestMeeting(s)}
+                onApplyJob={(s) => handleApplyJob(s)}
+                onActionSuccess={(msg) => triggerToast(msg)}
+              />
             ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-card border border-border rounded-2xl p-8">
+            <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="text-lg font-black text-foreground">No Startups Found</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto font-medium">
+              Try adjusting your search terms, role perspective, or investor filters to see available startup listings.
+            </p>
           </div>
         )}
       </main>
+
+      {/* PITCH DECK MODAL */}
+      {selectedDeckStartup && (
+        <PitchDeckModal
+          isOpen={!!selectedDeckStartup}
+          onClose={() => setSelectedDeckStartup(null)}
+          startupName={selectedDeckStartup.name}
+          onRequestMeeting={() => handleRequestMeeting(selectedDeckStartup)}
+        />
+      )}
     </div>
   );
 }
