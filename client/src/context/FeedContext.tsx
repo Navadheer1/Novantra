@@ -129,7 +129,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [clerkUser?.id, getToken, posts.length]);
+  }, [clerkUser?.id, getToken]);
 
   const toggleLikeOptimistic = useCallback((postId: string) => {
     setPosts(prev =>
