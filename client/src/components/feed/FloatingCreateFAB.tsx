@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Rocket, Send, DollarSign, Briefcase, Calendar, BarChart2 } from "lucide-react";
+import { Plus, Video, Rocket, Send, DollarSign, Briefcase, Calendar } from "lucide-react";
 
 interface FloatingCreateFABProps {
   onSelectAction: (actionId: string) => void;
@@ -12,7 +12,8 @@ export default function FloatingCreateFAB({ onSelectAction }: FloatingCreateFABP
   const [open, setOpen] = useState(false);
 
   const options = [
-    { id: "launch_startup", label: "Launch Startup", icon: Rocket, color: "text-blue-600 bg-blue-50" },
+    { id: "foundertv", label: "Upload FounderTV Video", icon: Video, color: "text-blue-600 bg-blue-50" },
+    { id: "launch_startup", label: "Launch Startup", icon: Rocket, color: "text-purple-600 bg-purple-50" },
     { id: "share_update", label: "Share Update", icon: Send, color: "text-emerald-600 bg-emerald-50" },
     { id: "raise_funding", label: "Raise Funding", icon: DollarSign, color: "text-emerald-600 bg-emerald-50" },
     { id: "hire_talent", label: "Hire Talent", icon: Briefcase, color: "text-purple-600 bg-purple-50" },

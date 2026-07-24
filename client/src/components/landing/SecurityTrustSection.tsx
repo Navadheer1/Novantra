@@ -10,8 +10,8 @@ export function SecurityTrustSection() {
       icon: ShieldCheck,
     },
     {
-      title: "End-to-End Encrypted WebRTC",
-      desc: "Live pitch room streams use WebRTC DTLS/SRTP encryption. Zero video recording without founder consent.",
+      title: "Encrypted Real-Time Vaults",
+      desc: "Live pitch deck streams and founder data use zero-trust DTLS/SRTP encryption. Zero data recording without founder consent.",
       icon: Lock,
     },
     {

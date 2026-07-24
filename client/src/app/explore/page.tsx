@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useAuth, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import DiscoveryLayout, { DiscoveryView } from "@/components/explore/discovery/DiscoveryLayout";
 import RecommendedFeed from "@/components/explore/discovery/RecommendedFeed";
@@ -15,6 +17,9 @@ import PlaylistsManager from "@/components/explore/discovery/PlaylistsManager";
 import ChannelProfile from "@/components/explore/discovery/ChannelProfile";
 import DiscoveryMap from "@/components/explore/discovery/DiscoveryMap";
 import OpportunitiesFeed from "@/components/explore/discovery/OpportunitiesFeed";
+import CreatorStudioWorkspace from "@/components/explore/discovery/CreatorStudioWorkspace";
+import CreatorStudioPanel from "@/components/feed/CreatorStudioPanel";
+import { AnimatePresence, motion } from "framer-motion";
 import { 
   mockVideos, mockShorts, mockPodcasts, mockStartups, 
   mockFounders, mockInvestors, mockJobs, mockEvents, mockLearningPaths 
@@ -48,12 +53,17 @@ function ExplorePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const { user: clerkUser } = useUser();
 
   const [currentView, setCurrentView] = useState<DiscoveryView>("recommended");
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [activeShortId, setActiveShortId] = useState<string | null>(null);
   const [activePodcastId, setActivePodcastId] = useState<string | null>(null);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
+
+  // Creator Studio Shared Workspace State
+  const [creatorOpen, setCreatorOpen] = useState(false);
+  const [creatorPreset, setCreatorPreset] = useState("foundertv");
 
   // Live state databases for real-time tickers
   const [videos, setVideos] = useState<Video[]>(mockVideos);
@@ -64,6 +74,45 @@ function ExplorePageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("all");
   const [searchActive, setSearchActive] = useState(false);
+
+  const handleQuickAction = (actionId: string) => {
+    setCreatorPreset(actionId);
+    setCreatorOpen(true);
+  };
+
+  const handlePublishPost = async (content: string, postType: string, mediaUrl: string): Promise<boolean> => {
+    if (postType === "foundertv" || postType === "short") {
+      const newVid: Video = {
+        id: `vid-${Date.now()}`,
+        title: content.split("\n")[0].replace("[FounderTV]", "").trim() || "New FounderTV Demo",
+        description: content,
+        thumbnailUrl: mediaUrl || "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&q=80",
+        videoUrl: "",
+        duration: 765,
+        views: 1,
+        likesCount: 1,
+        commentsCount: 0,
+        createdAt: new Date().toISOString(),
+        categoryId: "Product Demo",
+        technology: "Noventra Tech",
+        channelId: "ch-noventra",
+        bookmarksCount: 0,
+        isLive: false,
+        liveBadge: false,
+        channel: {
+          id: "ch-noventra",
+          name: clerkUser?.fullName || "Founder",
+          avatarUrl: clerkUser?.imageUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80",
+          subscribersCount: 1200,
+          followersCount: 1500,
+          userId: clerkUser?.id || "user-1",
+          createdAt: new Date().toISOString()
+        }
+      };
+      setVideos((prev) => [newVid, ...prev]);
+    }
+    return true;
+  };
 
   // 1. Post-Hydration client shuffling for evolving feeds on refresh
   useEffect(() => {
@@ -236,6 +285,7 @@ function ExplorePageContent() {
   );
 
   const searchInvestors = mockInvestors.map(i => ({
+    id: i.id,
     name: i.name,
     title: i.headline,
     ticket: i.ticketSize,
@@ -267,7 +317,7 @@ function ExplorePageContent() {
   const showAll = searchCategory === "all";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col antialiased relative">
       <Navbar />
 
       <DiscoveryLayout
@@ -275,7 +325,9 @@ function ExplorePageContent() {
         onViewChange={handleViewChange}
         onSearch={handleSearch}
       >
-        {searchActive ? (
+        <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+          <div className="flex-1 min-w-0">
+            {searchActive ? (
           /* SEARCH RESULTS PANEL VIEW */
           <div className="space-y-8 animate-fadeIn">
             <div>
@@ -390,9 +442,13 @@ function ExplorePageContent() {
                       key={idx}
                       className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-850 p-4 rounded-2xl flex items-center space-x-3.5"
                     >
-                      <img src={investor.avatar} alt="" className="w-10 h-10 rounded-full object-cover border" />
+                      <Link href={`/profile/${investor.id}`} className="shrink-0">
+                        <img src={investor.avatar} alt="" className="w-10 h-10 rounded-full object-cover border hover:scale-105 transition-all" />
+                      </Link>
                       <div>
-                        <h4 className="text-sm font-black text-neutral-900 dark:text-white">{investor.name}</h4>
+                        <Link href={`/profile/${investor.id}`}>
+                          <h4 className="text-sm font-black text-neutral-900 dark:text-white hover:underline transition-colors cursor-pointer">{investor.name}</h4>
+                        </Link>
                         <p className="text-[10px] sm:text-xs text-neutral-500 font-semibold">{investor.title} • Ticket: {investor.ticket}</p>
                       </div>
                     </div>
@@ -515,6 +571,10 @@ function ExplorePageContent() {
               />
             )}
 
+            {currentView === "studio" && (
+              <CreatorStudioWorkspace onSelectVideo={handleSelectVideo} />
+            )}
+
             {currentView === "shorts" && (
               <ShortsFeed
                 shortId={activeShortId}
@@ -568,8 +628,24 @@ function ExplorePageContent() {
             )}
           </div>
         )}
-      </DiscoveryLayout>
+      </div>
+
+      <AnimatePresence>
+        {creatorOpen && (
+          <CreatorStudioPanel
+            key="explore-creator-studio"
+            isOpen={creatorOpen}
+            onClose={() => setCreatorOpen(false)}
+            presetType={creatorPreset}
+            dbUser={null}
+            clerkUser={clerkUser}
+            onSubmitPost={handlePublishPost}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  </DiscoveryLayout>
+</div>
   );
 }
 

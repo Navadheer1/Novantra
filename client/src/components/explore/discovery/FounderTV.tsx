@@ -173,9 +173,9 @@ export default function FounderTV({ videoId, onSelectVideo, onSelectChannel }: F
               {/* Description Drawer Box */}
               <div className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-150 dark:border-neutral-900 p-4 sm:p-5 rounded-2xl space-y-2">
                 <div className="flex items-center space-x-3 text-xs text-neutral-500 font-bold">
-                  <span>{currentVideo.views.toLocaleString()} views</span>
+                  <span>{currentVideo.views.toLocaleString("en-US")} views</span>
                   <span>•</span>
-                  <span>{new Date(currentVideo.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span>
+                  <span>{new Date(currentVideo.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-800 dark:text-neutral-300 leading-relaxed font-medium">
                   {currentVideo.description}
@@ -304,9 +304,9 @@ export default function FounderTV({ videoId, onSelectVideo, onSelectChannel }: F
                       {video.channel.name}
                     </p>
                     <div className="flex items-center text-[10px] text-neutral-450 font-bold space-x-1.5">
-                      <span>{video.views.toLocaleString()} views</span>
+                      <span>{video.views.toLocaleString("en-US")} views</span>
                       <span>•</span>
-                      <span>{new Date(video.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                      <span>{new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                     </div>
                   </div>
                 </div>

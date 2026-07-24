@@ -26,7 +26,7 @@ export function SuccessStoriesSection() {
       stage: "Seed — $1.8M",
       founder: "Marcus Thorne (Ex-Stripe)",
       vc: "a16z & Founders Fund",
-      quote: "The WebRTC pitch rooms made pitching effortless. Investors saw our live terminal demo without awkward software installs or link delays.",
+      quote: "The seamless product workspace made pitching effortless. Investors reviewed our live terminal demo and traction metrics without friction or software installs.",
       metrics: "Closed 100% of target allocation",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
     },

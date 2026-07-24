@@ -1,40 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { getApiUrl } from "@/lib/apiConfig";
 import { useAuth } from "@clerk/nextjs";
-import { CheckCircle2, Rocket, Plus, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, Flame, Rocket, Sparkles, Star, ThumbsUp, Layers } from "lucide-react";
 
-import ShopRoleToggle, { ShopRoleLens } from "@/components/marketplace/ShopRoleToggle";
-import ShopHero from "@/components/marketplace/ShopHero";
-import AIBuildAssistant from "@/components/marketplace/AIBuildAssistant";
-import StartupKitsSection, { StartupKit } from "@/components/marketplace/StartupKitsSection";
-import CreatorSpotlightSection, { CreatorProfile } from "@/components/marketplace/CreatorSpotlightSection";
-import InnovationShowcaseSection, { HardwareInnovation } from "@/components/marketplace/InnovationShowcaseSection";
-import VisualCategoryGrid from "@/components/marketplace/VisualCategoryGrid";
-import CuratedCollections from "@/components/marketplace/CuratedCollections";
-import CustomizationModal from "@/components/marketplace/CustomizationModal";
-import ShopFeedTicker from "@/components/marketplace/ShopFeedTicker";
-import RedesignedProductCard from "@/components/marketplace/RedesignedProductCard";
+import ShopLeftSidebar from "@/components/marketplace/ShopLeftSidebar";
+import ShopTopSearch from "@/components/marketplace/ShopTopSearch";
+import AppStoreProductCard from "@/components/marketplace/AppStoreProductCard";
+import AppStoreCollections from "@/components/marketplace/AppStoreCollections";
+import ShopRightPanel from "@/components/marketplace/ShopRightPanel";
+
 import SolutionInspectorModal from "@/components/marketplace/SolutionInspectorModal";
+import CustomizationModal from "@/components/marketplace/CustomizationModal";
 import { SolutionProduct } from "@/components/marketplace/SolutionCard";
 
 export default function MarketplacePage() {
   const { getToken } = useAuth();
 
+  // Data & Loading State
   const [products, setProducts] = useState<SolutionProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Role Perspective Lens
-  const [roleView, setRoleView] = useState<ShopRoleLens>("FOUNDER");
-
-  // Search & Category Filter State
-  const [searchQuery, setSearchQuery] = useState("");
+  // App Store Navigation State
+  const [activeSection, setActiveSection] = useState("discover"); // discover | collections | category | creators | library
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Wishlist & Recently Viewed State
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+  const [purchasedIds, setPurchasedIds] = useState<string[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<SolutionProduct[]>([]);
+  const [hoveredProduct, setHoveredProduct] = useState<SolutionProduct | null>(null);
 
   // Modals state
   const [inspectingProduct, setInspectingProduct] = useState<SolutionProduct | null>(null);
@@ -47,6 +46,25 @@ export default function MarketplacePage() {
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const toggleWishlist = (productId: string) => {
+    setWishlistIds((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+    );
+    triggerToast(
+      wishlistIds.includes(productId) ? "Removed from Wishlist" : "Saved to My Library Wishlist!"
+    );
+  };
+
+  const handleInspect = (prod: SolutionProduct) => {
+    setInspectingProduct(prod);
+    setRecentlyViewed((prev) => [prod, ...prev.filter((p) => p.id !== prod.id)]);
+  };
+
+  const handleBuy = (prod: SolutionProduct) => {
+    setPurchasedIds((prev) => [...prev, prod.id]);
+    triggerToast(`Acquisition initiated for ${prod.title}! Check your library access.`);
   };
 
   const loadProducts = async () => {
@@ -65,7 +83,7 @@ export default function MarketplacePage() {
 
       if (res.ok) {
         const data = await res.json();
-        setProducts(data);
+        setProducts(data.length > 0 ? data : getFallbackProducts());
       } else {
         setProducts(getFallbackProducts());
       }
@@ -79,171 +97,274 @@ export default function MarketplacePage() {
 
   const getFallbackProducts = (): SolutionProduct[] => [
     {
-      id: "prod-next-saas",
+      id: "prod-nova-crm",
       sellerId: "seller-marcus",
-      title: "Next.js 16 Production SaaS Boilerplate",
-      description: "Complete production-ready Next.js App Router boilerplate. Pre-configured with Clerk Auth, Prisma PostgreSQL, Stripe payments, Resend email workflows, and a tailwind theme dashboard layout.",
-      category: "Next.js Projects",
-      tags: ["Next.js", "SaaS", "Stripe", "Prisma", "TypeScript"],
+      title: "Nova CRM & LeadPulse AI Engine",
+      description: "Autonomous pipeline scoring and Stripe revenue attribution. Includes real-time lead routing and email sequence automation.",
+      category: "SaaS",
+      tags: ["SaaS", "CRM", "Stripe", "AI"],
+      price: 79.0,
+      originalPrice: 120.0,
+      type: "DIGITAL_DOWNLOAD",
+      status: "ACTIVE",
+      version: "2.0.0",
+      thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
+      rating: 4.9,
+      downloadsCount: 1840,
+      techStack: ["Next.js 16", "TypeScript", "Prisma", "Stripe"],
+      features: ["Pipeline scoring", "Stripe webhook sync", "Autonomous outreach"],
+      seller: { id: "seller-marcus", storeName: "Marcus Labs", logoUrl: null, isVerified: true, trustScore: 99 }
+    },
+    {
+      id: "prod-hospital-os",
+      sellerId: "seller-elena",
+      title: "HospitalOS v3 - Clinical Workflow Engine",
+      description: "HIPAA-compliant patient portal, EHR sync APIs, and intelligent doctor schedule optimizer built for healthcare startups.",
+      category: "SaaS",
+      tags: ["Healthcare", "EHR", "HIPAA", "API"],
+      price: 149.0,
+      originalPrice: 199.0,
+      type: "DIGITAL_DOWNLOAD",
+      status: "ACTIVE",
+      version: "3.1.0",
+      thumbnailUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=250&fit=crop",
+      rating: 4.8,
+      downloadsCount: 920,
+      techStack: ["React", "FHIR API", "PostgreSQL", "Tailwind"],
+      features: ["HIPAA security vault", "FHIR EHR connector", "Patient messaging"],
+      seller: { id: "seller-elena", storeName: "HealthTech Systems", logoUrl: null, isVerified: true, trustScore: 98 }
+    },
+    {
+      id: "prod-builder-kit",
+      sellerId: "seller-alex",
+      title: "BuilderKit - Next.js 16 SaaS Boilerplate",
+      description: "Complete production-ready Next.js App Router boilerplate pre-configured with Clerk Auth, Prisma DB, Stripe payments, and Resend.",
+      category: "Startup Kits",
+      tags: ["Next.js", "SaaS", "Boilerplate"],
       price: 49.0,
       originalPrice: 99.0,
       type: "DIGITAL_DOWNLOAD",
       status: "ACTIVE",
-      version: "2.1.0",
-      thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
-      rating: 4.9,
-      downloadsCount: 312,
-      techStack: ["Next.js 16", "TypeScript", "Prisma", "Stripe"],
-      features: ["Clerk Auth pre-configured", "Stripe Checkout & Webhooks", "Resend Transactional Emails"],
-      seller: { id: "seller-marcus", storeName: "Marcus Labs", logoUrl: null, isVerified: true, trustScore: 98 }
-    },
-    {
-      id: "prod-figma-kit",
-      sellerId: "seller-elena",
-      title: "Vibrant UI - Figma Design System & Tokens",
-      description: "A premium Figma UI kit built specifically for startup landing pages and dashboard SaaS layouts. Features 300+ responsive components and typography hierarchies.",
-      category: "UI Kits",
-      tags: ["Figma", "UI Kit", "Design System"],
-      price: 29.0,
-      originalPrice: 49.0,
-      type: "DESIGN_ASSETS",
-      status: "ACTIVE",
-      version: "1.2.0",
+      version: "2.4.0",
       thumbnailUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=250&fit=crop",
-      rating: 4.8,
-      downloadsCount: 184,
-      techStack: ["Figma", "Auto-Layout 5.0", "Variables"],
-      features: ["300+ Nested components", "Auto-Layout grids", "Dark mode variables"],
-      seller: { id: "seller-elena", storeName: "Elena UI/UX", logoUrl: null, isVerified: true, trustScore: 99 }
+      rating: 4.9,
+      downloadsCount: 3200,
+      techStack: ["Next.js 16", "Clerk", "Prisma", "Stripe"],
+      features: ["Clerk auth ready", "Stripe subscription webhooks", "Tailwind dashboard"],
+      seller: { id: "seller-alex", storeName: "Alex Works", logoUrl: null, isVerified: true, trustScore: 97 }
     },
     {
-      id: "prod-ai-agent",
+      id: "prod-ai-agent-suite",
       sellerId: "seller-alex",
       title: "AI Co-Founder & Pitch Deck Prompt Suite",
-      description: "Production prompt engineering kit and API wrapper for OpenAI GPT-4. Generates financial projections, competitor analysis, and pitch deck copy automatically.",
-      category: "AI Tools",
+      description: "Production prompt engineering kit and API wrapper for OpenAI GPT-4. Generates financial projections & pitch deck copy automatically.",
+      category: "AI Agents",
       tags: ["AI", "OpenAI", "Prompt Kit"],
       price: 0,
-      originalPrice: 19.0,
+      originalPrice: 29.0,
       type: "FREE_ASSET",
       status: "ACTIVE",
       version: "1.0.0",
       thumbnailUrl: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=250&fit=crop",
       rating: 4.7,
-      downloadsCount: 520,
+      downloadsCount: 1420,
       techStack: ["OpenAI API", "Python", "JSON Schemas"],
-      features: ["15 Enterprise AI Prompts", "Slide text generator", "Competitor analysis schema"],
-      seller: { id: "seller-alex", storeName: "Alex AI Works", logoUrl: null, isVerified: true, trustScore: 95 }
+      features: ["15 Enterprise AI Prompts", "Slide text generator", "Financial modeler"],
+      seller: { id: "seller-alex", storeName: "Alex Works", logoUrl: null, isVerified: true, trustScore: 97 }
     }
   ];
 
-  const handleBuy = (prod: SolutionProduct) => {
-    triggerToast(`Acquisition initiated for ${prod.title}! Check your email for code access.`);
-  };
-
-  const handleBuyKit = (kit: StartupKit) => {
-    triggerToast(`Startup Bundle "${kit.name}" acquired! All ${kit.includes.length} assets un-archived.`);
-  };
-
-  const handleHireCreator = (creator: CreatorProfile | string) => {
-    const cName = typeof creator === "string" ? creator : creator.name;
-    triggerToast(`Custom work request ticket opened with ${cName}!`);
-  };
+  // Filter products by selected category or section
+  const filteredProducts = products.filter((p) => {
+    if (activeSection === "library") return wishlistIds.includes(p.id) || purchasedIds.includes(p.id);
+    if (selectedCategory === "ALL") return true;
+    return p.category?.toUpperCase().replace(/\s+/g, "_") === selectedCategory || p.tags?.some(t => t.toUpperCase() === selectedCategory);
+  });
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-700">
+      {/* Sticky Top Navbar */}
       <Navbar />
 
       {/* TOAST NOTIFICATION */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 bg-foreground text-background font-bold text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-border animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-20 right-6 z-50 bg-slate-900 text-white font-bold text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-800 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 1. PREMIUM HERO */}
-        <ShopHero
-          onSearch={(q) => setSearchQuery(q)}
-          onSelectSuggestion={(cat) => setSelectedCategory(cat)}
-          onOpenSellModal={() => triggerToast("Publisher studio opening...")}
-        />
-
-        {/* 2. ROLE PERSPECTIVE TOGGLE */}
-        <ShopRoleToggle
-          currentRole={roleView}
-          onRoleChange={(r) => setRoleView(r)}
-        />
-
-        {/* 3. LIVE ECOSYSTEM FEED TICKER */}
-        <ShopFeedTicker />
-
-        {/* 4. AI BUILD ASSISTANT */}
-        <AIBuildAssistant
-          onDeployStack={(stackName) => triggerToast(`Complete ${stackName} tech stack deployed to your repository!`)}
-        />
-
-        {/* 5. STARTUP KITS (1-CLICK BUNDLES) */}
-        <StartupKitsSection
-          onBuyKit={handleBuyKit}
-        />
-
-        {/* 6. CREATOR SPOTLIGHT */}
-        <CreatorSpotlightSection
-          onHireCreator={(c) => handleHireCreator(c)}
-        />
-
-        {/* 7. INNOVATION SHOWCASE (HARDWARE & ROBOTICS) */}
-        <InnovationShowcaseSection
-          onInspectInnovation={(hw) => triggerToast(`Inspecting CAD & PCB files for ${hw.title}`)}
-        />
-
-        {/* 8. VISUAL CATEGORIES GRID */}
-        <VisualCategoryGrid
-          onSelectCategory={(catName) => setSelectedCategory(catName)}
-        />
-
-        {/* 9. CURATED COLLECTIONS */}
-        <CuratedCollections
-          onSelectCollection={(colId) => triggerToast(`Filtered collection: ${colId}`)}
-        />
-
-        {/* 10. PRODUCT CARDS GRID */}
-        <div className="mb-12 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-foreground tracking-tight">
-              Featured Startup Products & Assets
-            </h2>
-            <span className="text-xs font-bold text-muted-foreground">
-              Showing {products.length} Production Ready Items
-            </span>
+      {/* 3-COLUMN APP STORE FOR STARTUPS LAYOUT */}
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_260px] gap-6 items-start">
+          
+          {/* 1. PERSISTENT LEFT SIDEBAR */}
+          <div className="lg:sticky lg:top-20">
+            <ShopLeftSidebar
+              activeSection={activeSection}
+              onSelectSection={(sec) => setActiveSection(sec)}
+              selectedCategory={selectedCategory}
+              onSelectCategory={(cat) => {
+                setSelectedCategory(cat);
+                setActiveSection("category");
+              }}
+              wishlistCount={wishlistIds.length}
+              purchasesCount={purchasedIds.length}
+            />
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-80 bg-card border border-border rounded-2xl animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {products.map((prod) => (
-                <RedesignedProductCard
-                  key={prod.id}
-                  product={prod}
-                  onInspect={(p) => setInspectingProduct(p)}
-                  onBuy={(p) => handleBuy(p)}
-                  onCustomize={(p) => setCustomizingProduct({ title: p.title, creator: p.seller?.storeName || "Marcus Labs" })}
-                  onHireCreator={(cName) => handleHireCreator(cName)}
+          {/* 2. CENTER PRODUCT FEED (DISCOVERY ENGINE) */}
+          <div className="space-y-6 min-w-0">
+            {/* Top Natural Language Search & AI Matcher */}
+            <ShopTopSearch
+              searchQuery={searchQuery}
+              onSearchChange={(q) => setSearchQuery(q)}
+              onSelectTag={(tag) => setSearchQuery(tag)}
+            />
+
+            {/* FEED SECTION CONTENT */}
+            {activeSection === "collections" ? (
+              <AppStoreCollections
+                onSelectCollection={(colId) => {
+                  triggerToast(`Showing collection: ${colId}`);
+                  setSelectedCategory("ALL");
+                  setActiveSection("discover");
+                }}
+              />
+            ) : activeSection === "library" ? (
+              <div className="space-y-4">
+                <h2 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <span>My Library</span>
+                  <span className="text-xs font-normal text-slate-400">({filteredProducts.length} Saved & Purchased)</span>
+                </h2>
+                {filteredProducts.length === 0 ? (
+                  <div className="p-8 rounded-2xl bg-white border border-slate-200/60 text-center text-xs text-slate-500 font-medium">
+                    No items saved to your library yet. Browse products and click the bookmark icon to save them here!
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {filteredProducts.map((prod) => (
+                      <AppStoreProductCard
+                        key={prod.id}
+                        product={prod}
+                        onInspect={handleInspect}
+                        onBuy={handleBuy}
+                        onHoverProduct={setHoveredProduct}
+                        isWishlisted={wishlistIds.includes(prod.id)}
+                        onToggleWishlist={toggleWishlist}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* DISCOVER STREAM: Featured Today -> Recommended -> Collections -> Trending -> New Launches */
+              <div className="space-y-8">
+                {/* A. FEATURED TODAY */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm">
+                      <Sparkles className="w-4 h-4 text-amber-500 fill-amber-400" />
+                      <span>Featured Today</span>
+                    </div>
+                    <span className="text-xs font-semibold text-slate-400">Curated Daily</span>
+                  </div>
+
+                  {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {[1, 2].map((i) => (
+                        <div key={i} className="h-64 rounded-2xl bg-slate-100 animate-pulse" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {products.slice(0, 2).map((prod) => (
+                        <AppStoreProductCard
+                          key={prod.id}
+                          product={prod}
+                          onInspect={handleInspect}
+                          onBuy={handleBuy}
+                          onHoverProduct={setHoveredProduct}
+                          isWishlisted={wishlistIds.includes(prod.id)}
+                          onToggleWishlist={toggleWishlist}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* B. RECOMMENDED FOR YOU */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm">
+                      <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                      <span>Recommended For You</span>
+                    </div>
+                    <span className="text-xs font-semibold text-slate-400">Based on your founder profile</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {products.slice(2, 4).map((prod) => (
+                      <AppStoreProductCard
+                        key={prod.id}
+                        product={prod}
+                        onInspect={handleInspect}
+                        onBuy={handleBuy}
+                        onHoverProduct={setHoveredProduct}
+                        isWishlisted={wishlistIds.includes(prod.id)}
+                        onToggleWishlist={toggleWishlist}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* C. CURATED COLLECTIONS */}
+                <AppStoreCollections
+                  onSelectCollection={(colId) => triggerToast(`Filtering by collection: ${colId}`)}
                 />
-              ))}
-            </div>
-          )}
+
+                {/* D. TRENDING & NEW LAUNCHES STREAM */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm">
+                      <Rocket className="w-4 h-4 text-blue-600" />
+                      <span>Recently Launched</span>
+                    </div>
+                    <span className="text-xs font-semibold text-slate-400">Showing {filteredProducts.length} tools</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {filteredProducts.map((prod) => (
+                      <AppStoreProductCard
+                        key={prod.id}
+                        product={prod}
+                        onInspect={handleInspect}
+                        onBuy={handleBuy}
+                        onHoverProduct={setHoveredProduct}
+                        isWishlisted={wishlistIds.includes(prod.id)}
+                        onToggleWishlist={toggleWishlist}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 3. CONTEXTUAL RIGHT UTILITY PANEL */}
+          <div className="lg:sticky lg:top-20">
+            <ShopRightPanel
+              hoveredProduct={hoveredProduct}
+              onInspectProduct={handleInspect}
+              onBuyProduct={handleBuy}
+              trendingProducts={products}
+              recentlyViewed={recentlyViewed}
+            />
+          </div>
         </div>
       </main>
 
-      {/* SOLUTION INSPECTOR MODAL */}
+      {/* QUICK PREVIEW & CODE INSPECTOR MODAL */}
       <SolutionInspectorModal
         isOpen={!!inspectingProduct}
         product={inspectingProduct}
@@ -257,8 +378,8 @@ export default function MarketplacePage() {
         productTitle={customizingProduct?.title}
         creatorName={customizingProduct?.creator}
         onClose={() => setCustomizingProduct(null)}
-        onSubmitRequest={({ requirements, budget, timeline }) =>
-          triggerToast(`Customization request ($${budget}, ${timeline}) sent to ${customizingProduct?.creator}!`)
+        onSubmitRequest={({ budget, timeline }) =>
+          triggerToast(`Customization ticket ($${budget}, ${timeline}) sent to creator!`)
         }
       />
     </div>

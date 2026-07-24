@@ -22,6 +22,9 @@ import {
   FileText
 } from "lucide-react";
 
+import PitchComposerModal from "@/components/pitches/PitchComposerModal";
+import RequestIntroModal from "@/components/pitches/RequestIntroModal";
+
 export interface InvestorCardData {
   id: string;
   name: string;
@@ -50,9 +53,9 @@ export interface InvestorCardData {
 
 interface FounderInvestorCardProps {
   investor: InvestorCardData;
-  onSendPitch: (investor: InvestorCardData) => void;
-  onRequestMeeting: (investor: InvestorCardData) => void;
-  onRequestWarmIntro: (investor: InvestorCardData) => void;
+  onSendPitch?: (investor: InvestorCardData) => void;
+  onRequestMeeting?: (investor: InvestorCardData) => void;
+  onRequestWarmIntro?: (investor: InvestorCardData) => void;
   onActionSuccess: (msg: string) => void;
 }
 
@@ -65,6 +68,10 @@ export default function FounderInvestorCard({
 }: FounderInvestorCardProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+
+  // Modals state
+  const [isPitchComposerOpen, setIsPitchComposerOpen] = useState(false);
+  const [isRequestIntroOpen, setIsRequestIntroOpen] = useState(false);
 
   const matchScore = investor.matchScore || 96;
   const matchReasons = investor.matchReasons || [
@@ -81,18 +88,20 @@ export default function FounderInvestorCard({
         <div className="p-5 pb-3 bg-gradient-to-r from-primary/10 via-background to-blue-500/5 border-b border-border/60">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl border-2 border-primary/20 bg-background shadow-md overflow-hidden shrink-0 flex items-center justify-center font-black text-xl text-primary">
+              <Link href={`/profile/${investor.id}`} className="w-14 h-14 rounded-2xl border-2 border-primary/20 bg-background shadow-md overflow-hidden shrink-0 flex items-center justify-center font-black text-xl text-primary hover:border-primary hover:scale-105 transition-all">
                 {investor.avatarUrl ? (
                   <img src={investor.avatarUrl} alt={investor.name} className="w-full h-full object-cover" />
                 ) : (
                   investor.name.slice(0, 2).toUpperCase()
                 )}
-              </div>
+              </Link>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-base font-black text-foreground group-hover:text-primary transition-colors">
-                    {investor.name}
-                  </h3>
+                  <Link href={`/profile/${investor.id}`}>
+                    <h3 className="text-base font-black text-foreground group-hover:text-primary hover:underline transition-colors cursor-pointer">
+                      {investor.name}
+                    </h3>
+                  </Link>
                   {investor.verified !== false && (
                     <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                   )}
@@ -148,20 +157,8 @@ export default function FounderInvestorCard({
           </div>
 
           <div className="space-y-1.5 text-xs text-muted-foreground font-semibold">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span>Location: <strong className="text-foreground">{investor.location || "San Francisco / Remote"}</strong></span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span>Sectors: <strong className="text-foreground">{investor.investmentInterests?.slice(0, 3).join(", ") || "AI, SaaS, Fintech"}</strong></span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span>Last Active: <strong className="text-emerald-600 font-bold">{investor.lastActive || "2 hours ago"}</strong></span>
-            </div>
+            <p><strong>Thesis:</strong> {investor.thesisSummary || "Investing in high-conviction AI & developer software."}</p>
+            <p><strong>Stages:</strong> {investor.preferredStages?.join(", ") || "Pre-Seed, Seed"}</p>
           </div>
         </div>
       </div>
@@ -172,7 +169,7 @@ export default function FounderInvestorCard({
           <Button
             size="sm"
             className="w-full text-xs font-bold bg-primary hover:bg-primary/90"
-            onClick={() => onSendPitch(investor)}
+            onClick={() => setIsPitchComposerOpen(true)}
           >
             <Send className="w-3.5 h-3.5 mr-1" /> Send Pitch
           </Button>
@@ -180,21 +177,24 @@ export default function FounderInvestorCard({
             variant="outline"
             size="sm"
             className="w-full text-xs font-bold border-blue-500/30 text-blue-700 dark:text-blue-300"
-            onClick={() => onRequestMeeting(investor)}
+            onClick={() => setIsRequestIntroOpen(true)}
           >
-            <Calendar className="w-3.5 h-3.5 mr-1" /> Request Pitch
+            <UserPlus className="w-3.5 h-3.5 mr-1" /> Request Intro
           </Button>
         </div>
 
         <div className="flex items-center justify-between pt-1 text-[11px] font-semibold text-muted-foreground">
           <button
-            onClick={() => onRequestWarmIntro(investor)}
+            onClick={() => setIsRequestIntroOpen(true)}
             className="text-primary hover:underline font-bold flex items-center gap-1"
           >
             <UserPlus className="w-3 h-3" /> Warm Intro
           </button>
           <button
-            onClick={() => setIsSaved(!isSaved)}
+            onClick={() => {
+              setIsSaved(!isSaved);
+              onActionSuccess(isSaved ? `Removed ${investor.name} from saved` : `Saved ${investor.name}`);
+            }}
             className="hover:text-foreground flex items-center gap-1"
           >
             <Bookmark className={`w-3 h-3 ${isSaved ? "fill-primary text-primary" : ""}`} />
@@ -202,6 +202,24 @@ export default function FounderInvestorCard({
           </button>
         </div>
       </div>
+
+      {/* MODALS */}
+      <PitchComposerModal
+        isOpen={isPitchComposerOpen}
+        onClose={() => setIsPitchComposerOpen(false)}
+        investorId={investor.id}
+        investorName={investor.name}
+        investorFirm={investor.firmName}
+        onSuccess={onActionSuccess}
+      />
+
+      <RequestIntroModal
+        isOpen={isRequestIntroOpen}
+        onClose={() => setIsRequestIntroOpen(false)}
+        investorName={investor.name}
+        investorFirm={investor.firmName}
+        onSuccess={onActionSuccess}
+      />
     </div>
   );
 }

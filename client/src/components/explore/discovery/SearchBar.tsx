@@ -15,28 +15,28 @@ const CATEGORIES = [
   { id: "startups", label: "Startups" },
   { id: "investors", label: "Investors" },
   { id: "jobs", label: "Jobs" },
-  { id: "learning", label: "Learning" },
   { id: "podcasts", label: "Podcasts" },
   { id: "events", label: "Events" }
 ];
 
 const SUGGESTIONS = [
-  "How to scale caching in Postgres",
-  "React server layout patterns",
-  "Linear design tokens workflow",
-  "Next.js 16 cold starts",
-  "Pre-seed fundraising pitch template",
-  "AI embeddings vector stores comparison",
-  "MCP Servers setup guide"
+  "Healthcare AI Startup Demos",
+  "FinTech seed pitch decks",
+  "AI Agents architecture demo",
+  "YC W26 founder interviews",
+  "Remote SaaS job postings",
+  "Developer Tools live code",
+  "Pre-seed fundraising pitch template"
 ];
 
 const TRENDING_SEARCHES = [
-  "MCP Servers",
-  "Vector DB",
-  "Next.js streaming",
-  "Sequoia ticket size",
-  "Hiring Node.js",
-  "RAG cache"
+  "Healthcare AI",
+  "YC Startups",
+  "FinTech",
+  "AI Agents",
+  "Remote Jobs",
+  "Startup Launches",
+  "Developer Tools"
 ];
 
 export default function SearchBar({ onSearchActive }: SearchBarProps) {
@@ -134,17 +134,18 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
           </div>
           <input
             type="text"
-            placeholder="Search videos, founders, startups, investors, learning playlists..."
+            placeholder="Search founders, startups, product demos, AI, fundraising..."
             value={query}
             onChange={handleInputChange}
             onKeyPress={handleSearchKeyPress}
             onFocus={() => setShowSuggestions(true)}
-            className="flex-1 bg-transparent border-none text-xs sm:text-sm text-neutral-900 dark:text-white py-2.5 focus:outline-none placeholder-neutral-400 font-bold"
+            suppressHydrationWarning
+            className="flex-1 bg-transparent border-none text-xs sm:text-sm text-slate-900 py-2.5 focus:outline-none placeholder:text-slate-400 font-semibold"
           />
           {query && (
             <button
               onClick={handleClear}
-              className="p-2 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition focus:outline-none"
+              className="p-2 text-slate-400 hover:text-slate-900 transition focus:outline-none"
             >
               <X className="w-4 h-4" />
             </button>
@@ -153,13 +154,13 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
 
         {/* Dynamic Search Suggestions Popover */}
         {showSuggestions && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl shadow-xl overflow-hidden z-40 p-4 space-y-4 max-h-[420px] overflow-y-auto animate-fadeIn">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200/80 rounded-3xl shadow-xl overflow-hidden z-40 p-4 space-y-4 max-h-[420px] overflow-y-auto animate-fadeIn">
             
             {/* 1. MATCHING SUGGESTIONS (if typing) */}
             {query.trim() !== "" && filteredSuggestions.length > 0 && (
               <div className="space-y-1">
-                <span className="text-[9px] uppercase tracking-wider font-extrabold text-neutral-400 flex items-center space-x-1">
-                  <Sparkles className="w-3 h-3 text-yellow-500" />
+                <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 flex items-center space-x-1">
+                  <Sparkles className="w-3 h-3 text-amber-500" />
                   <span>Suggestions</span>
                 </span>
                 <div className="space-y-1">
@@ -167,9 +168,9 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
                     <button
                       key={idx}
                       onClick={() => handleSelectSuggestion(sug)}
-                      className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-neutral-50 dark:hover:bg-neutral-950 text-neutral-850 dark:text-neutral-200 font-semibold flex items-center space-x-2 transition rounded-xl"
+                      className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-slate-50 text-slate-700 font-semibold flex items-center space-x-2 transition rounded-xl"
                     >
-                      <Search className="w-3.5 h-3.5 text-neutral-400" />
+                      <Search className="w-3.5 h-3.5 text-slate-400" />
                       <span>{sug}</span>
                     </button>
                   ))}
@@ -180,12 +181,12 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
             {/* 2. RECENT SEARCHES */}
             {recentSearches.length > 0 && (
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-extrabold text-neutral-400">
+                <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-extrabold text-slate-400">
                   <span className="flex items-center space-x-1">
                     <Clock className="w-3 h-3" />
                     <span>Recent Searches</span>
                   </span>
-                  <button onClick={handleClearRecent} className="hover:text-red-500 font-extrabold lowercase">
+                  <button onClick={handleClearRecent} className="hover:text-rose-500 font-extrabold lowercase">
                     Clear History
                   </button>
                 </div>
@@ -194,7 +195,7 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
                     <button
                       key={idx}
                       onClick={() => handleSelectSuggestion(sug)}
-                      className="bg-neutral-50 dark:bg-neutral-950 hover:bg-neutral-100 dark:hover:bg-neutral-850 border dark:border-neutral-850 px-3 py-1 rounded-full text-xs font-bold text-neutral-700 dark:text-neutral-350 transition flex items-center space-x-1"
+                      className="bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-3 py-1 rounded-full text-xs font-bold text-slate-700 transition flex items-center space-x-1"
                     >
                       <span>{sug}</span>
                     </button>
@@ -205,7 +206,7 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
 
             {/* 3. TRENDING SEARCHES */}
             <div className="space-y-1.5">
-              <span className="text-[9px] uppercase tracking-wider font-extrabold text-neutral-400 flex items-center space-x-1">
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 flex items-center space-x-1">
                 <Zap className="w-3 h-3 text-orange-500 fill-current" />
                 <span>Trending Queries</span>
               </span>
@@ -214,7 +215,7 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
                   <button
                     key={idx}
                     onClick={() => handleSelectSuggestion(sug)}
-                    className="bg-neutral-50 dark:bg-neutral-950 hover:bg-neutral-100 dark:hover:bg-neutral-850 border dark:border-neutral-850 px-3 py-1 rounded-full text-xs font-bold text-neutral-700 dark:text-neutral-350 transition"
+                    className="bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 px-3 py-1 rounded-full text-xs font-bold text-slate-700 hover:text-blue-600 transition"
                   >
                     {sug}
                   </button>
@@ -234,8 +235,8 @@ export default function SearchBar({ onSearchActive }: SearchBarProps) {
             onClick={() => handleCategoryClick(cat.id)}
             className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold border transition focus:outline-none ${
               activeCategory === cat.id
-                ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-xs"
-                : "bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
+                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                : "bg-white text-slate-600 border-slate-200/80 hover:bg-slate-50 hover:text-slate-900"
             }`}
           >
             {cat.label}

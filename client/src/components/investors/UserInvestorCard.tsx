@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Sparkles, BookOpen, Tv, FileText, ExternalLink, UserPlus } from "lucide-react";
 import { InvestorCardData } from "./FounderInvestorCard";
@@ -17,16 +18,18 @@ export default function UserInvestorCard({ investor, onActionSuccess }: UserInve
     <div className="bg-card border border-border/80 rounded-2xl shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between space-y-4">
       <div>
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-2xl border-2 border-purple-500/20 bg-background shadow-md overflow-hidden shrink-0 flex items-center justify-center font-black text-lg text-purple-600">
+          <Link href={`/profile/${investor.id}`} className="w-12 h-12 rounded-2xl border-2 border-purple-500/20 bg-background shadow-md overflow-hidden shrink-0 flex items-center justify-center font-black text-lg text-purple-600 hover:border-purple-500 hover:scale-105 transition-all">
             {investor.avatarUrl ? (
               <img src={investor.avatarUrl} alt={investor.name} className="w-full h-full object-cover" />
             ) : (
               investor.name.slice(0, 2).toUpperCase()
             )}
-          </div>
+          </Link>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="text-base font-black text-foreground">{investor.name}</h3>
+              <Link href={`/profile/${investor.id}`}>
+                <h3 className="text-base font-black text-foreground hover:text-purple-600 hover:underline transition-colors cursor-pointer">{investor.name}</h3>
+              </Link>
               {investor.verified !== false && <ShieldCheck className="w-4 h-4 text-emerald-500" />}
             </div>
             <p className="text-xs font-bold text-muted-foreground">{investor.firmName || "Partner @ Noventra Capital"}</p>

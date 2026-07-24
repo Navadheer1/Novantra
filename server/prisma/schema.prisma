@@ -102,6 +102,9 @@ model User {
   portfolioInvestments   Investment[]           @relation("UserPortfolioInvestments")
   investorNotes          InvestorNote[]         @relation("UserInvestorNotes")
 
+  founderPitches         Pitch[]                @relation("FounderPitches")
+  investorPitches        Pitch[]                @relation("InvestorPitches")
+
   @@index([name])
   @@index([role])
   @@index([location])
@@ -134,6 +137,7 @@ model Startup {
   pipelineEntries        InvestorPipeline[]     @relation("PipelineStartupRelation")
   portfolioInvestments   Investment[]           @relation("PortfolioStartupRelation")
   investorNotes          InvestorNote[]         @relation("NoteStartupRelation")
+  pitches                Pitch[]
 
   @@index([name])
   @@index([industry])
@@ -952,4 +956,213 @@ model InvestorNote {
   @@index([userId])
   @@index([startupId])
 }
+
+enum PitchStatus {
+  DRAFT
+  SUBMITTED
+  VIEWED
+  INTERESTED
+  MEETING_REQUESTED
+  DUE_DILIGENCE
+  PARTNER_REVIEW
+  TERM_SHEET
+  INVESTED
+  REJECTED
+  WITHDRAWN
+  ARCHIVED
+}
+
+model Pitch {
+  id              String      @id @default(cuid())
+  startupId       String
+  founderId       String
+  investorId      String?
+  organizationId  String?
+  partnerId       String?
+  status          PitchStatus @default(SUBMITTED)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  elevatorPitch   String
+  pitchText       String
+  fundingStage    String
+  amountRaising   Float
+  currency        String      @default("USD")
+  equityOffered   Float?
+  currentValuation Float?
+  useOfFunds      String?
+  timeline        String?
+  tags            String[]    @default([])
+
+  // Relations
+  startup         Startup             @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  founder         User                @relation("FounderPitches", fields: [founderId], references: [id])
+  investor        User?               @relation("InvestorPitches", fields: [investorId], references: [id])
+  metrics         PitchMetrics?
+  visibility      PitchVisibility?
+  aiFeedback      PitchAIFeedback?
+  aiSnapshot      AIMatchSnapshot?
+  documents       PitchDocument[]
+  versions        PitchVersion[]
+  activities      PitchActivity[]
+  comments        PitchComment[]
+  meetings        PitchMeeting[]
+  labels          PitchLabelOnPitch[]
+  dueDiligence    DueDiligenceItem[]
+
+  @@index([founderId])
+  @@index([investorId])
+  @@index([startupId])
+  @@index([status])
+}
+
+model PitchMetrics {
+  id          String   @id @default(cuid())
+  pitchId     String   @unique
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  mrr         Float?
+  arr         Float?
+  revenue     Float?
+  users       Int?
+  growthRate  Float?
+  retention   Float?
+  cac         Float?
+  ltv         Float?
+  burn        Float?
+  runway      Int?
+}
+
+model PitchVisibility {
+  id                  String   @id @default(cuid())
+  pitchId             String   @unique
+  pitch               Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  allowMessages       Boolean  @default(true)
+  allowMeeting        Boolean  @default(true)
+  allowPartnerShare   Boolean  @default(true)
+  allowCoInvestors    Boolean  @default(true)
+}
+
+model PitchAIFeedback {
+  id                    String   @id @default(cuid())
+  pitchId               String   @unique
+  pitch                 Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  overallReadinessScore Int
+  pitchClarity          Int
+  marketOpportunity     Int
+  financialCompleteness Int
+  founderProfileScore   Int
+  tractionStrength      Int
+  suggestions           String[] @default([])
+  weakSections          String[] @default([])
+}
+
+model AIMatchSnapshot {
+  id                 String   @id @default(cuid())
+  pitchId            String   @unique
+  pitch              Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  matchScore         Int
+  thesisMatch        Boolean  @default(true)
+  stageMatch         Boolean  @default(true)
+  checkSizeMatch     Boolean  @default(true)
+  reasons            String[] @default([])
+}
+
+model PitchDocument {
+  id          String   @id @default(cuid())
+  pitchId     String
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  type        String   // DECK | FINANCIAL | VIDEO | SCREENSHOT | DATA_ROOM | ONE_PAGER | CAP_TABLE
+  name        String
+  url         String
+  sizeBytes   Int?
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+
+  @@index([pitchId])
+}
+
+model PitchVersion {
+  id          String   @id @default(cuid())
+  pitchId     String
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  version     Int
+  deckUrl     String
+  changes     String?
+  createdAt   DateTime @default(now())
+
+  @@index([pitchId])
+}
+
+model PitchActivity {
+  id          String   @id @default(cuid())
+  pitchId     String
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  actorId     String
+  action      String   // PITCH_SUBMITTED | VIEWED | DECK_OPENED | VIDEO_WATCHED | MEETING_REQUESTED | DUE_DILIGENCE_STARTED | STATUS_CHANGED | NOTE_ADDED | TERM_SHEET_SENT
+  details     String?
+  createdAt   DateTime @default(now())
+
+  @@index([pitchId])
+}
+
+model PitchComment {
+  id           String   @id @default(cuid())
+  pitchId      String
+  pitch        Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  authorId     String
+  authorName   String
+  authorAvatar String?
+  content      String
+  isInternal   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([pitchId])
+}
+
+model PitchMeeting {
+  id          String   @id @default(cuid())
+  pitchId     String
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  title       String
+  scheduledAt DateTime
+  durationMin Int      @default(30)
+  meetingUrl  String?
+  agenda      String?
+  summary     String?
+  nextSteps   String?
+  status      String   @default("SCHEDULED")
+  createdAt   DateTime @default(now())
+
+  @@index([pitchId])
+}
+
+model DueDiligenceItem {
+  id          String   @id @default(cuid())
+  pitchId     String
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  category    String   // LEGAL | FINANCIAL | TECH | CAP_TABLE | COMPLIANCE
+  title       String
+  documentUrl String?
+  status      String   @default("PENDING")
+  updatedAt   DateTime @updatedAt
+
+  @@index([pitchId])
+}
+
+model PitchLabel {
+  id        String   @id @default(cuid())
+  name      String
+  color     String
+  pitches   PitchLabelOnPitch[]
+}
+
+model PitchLabelOnPitch {
+  pitchId   String
+  labelId   String
+  pitch     Pitch      @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  label     PitchLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([pitchId, labelId])
+}
+
 

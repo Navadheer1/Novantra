@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   ShieldCheck,
@@ -44,18 +45,20 @@ export default function InvestorCoInvestorCard({
         <div className="p-5 pb-3 bg-gradient-to-r from-emerald-500/10 via-background to-emerald-500/5 border-b border-border/60">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl border-2 border-emerald-500/20 bg-background shadow-md overflow-hidden shrink-0 flex items-center justify-center font-black text-xl text-emerald-600">
+              <Link href={`/profile/${investor.id}`} className="w-14 h-14 rounded-2xl border-2 border-emerald-500/20 bg-background shadow-md overflow-hidden shrink-0 flex items-center justify-center font-black text-xl text-emerald-600 hover:border-emerald-500 hover:scale-105 transition-all">
                 {investor.avatarUrl ? (
                   <img src={investor.avatarUrl} alt={investor.name} className="w-full h-full object-cover" />
                 ) : (
                   investor.name.slice(0, 2).toUpperCase()
                 )}
-              </div>
+              </Link>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-base font-black text-foreground group-hover:text-emerald-600 transition-colors">
-                    {investor.name}
-                  </h3>
+                  <Link href={`/profile/${investor.id}`}>
+                    <h3 className="text-base font-black text-foreground group-hover:text-emerald-600 hover:underline transition-colors cursor-pointer">
+                      {investor.name}
+                    </h3>
+                  </Link>
                   {investor.verified !== false && (
                     <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
                   )}

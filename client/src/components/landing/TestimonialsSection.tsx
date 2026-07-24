@@ -26,7 +26,7 @@ export function TestimonialsSection() {
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop",
     },
     {
-      quote: "The live WebRTC pitch room experience is lightyears ahead of standard Zoom calls. Zero delay, deck sync, and live analytics during the call.",
+      quote: "The interactive pitching experience is lightyears ahead of static PDF decks. Instant slide sync, real-time AI copilot, and direct investor engagement.",
       author: "Liam O'Connor",
       role: "Founder @ Quantum Compute",
       fund: "Raised $4.1M Series A",

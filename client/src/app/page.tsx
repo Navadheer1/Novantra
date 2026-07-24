@@ -7,8 +7,11 @@ import { BackgroundSystem } from "@/components/landing/BackgroundSystem";
 import { CursorSpotlight } from "@/components/landing/CursorSpotlight";
 import { Navbar } from "@/components/landing/Navbar";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { StatsSection } from "@/components/landing/StatsSection";
+import { ProductShowcaseSection } from "@/components/landing/ProductShowcaseSection";
+import { StartupJourneyTimeline } from "@/components/landing/StartupJourneyTimeline";
+import { FounderFeedSection } from "@/components/landing/FounderFeedSection";
 import { MarketplaceBento } from "@/components/landing/MarketplaceBento";
-import { AIMatchingSection } from "@/components/landing/AIMatchingSection";
 import { InteractiveDashboardPreview } from "@/components/landing/InteractiveDashboardPreview";
 import { CommunityNetworkSection } from "@/components/landing/CommunityNetworkSection";
 import { SuccessStoriesSection } from "@/components/landing/SuccessStoriesSection";
@@ -22,7 +25,6 @@ export default function Home() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
 
-  // If user is logged in, allow them to view the landing page or navigate to workspace
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       // Optional auto-redirect if desired, or let logged-in users explore the landing page
@@ -34,43 +36,52 @@ export default function Home() {
       {/* Dynamic Background Mesh & Particles */}
       <BackgroundSystem />
 
-      {/* Interactive Mouse Cursor Spotlight (Desktop only) */}
+      {/* Interactive Mouse Cursor Spotlight */}
       <CursorSpotlight />
 
       {/* Floating Glass Navbar */}
       <Navbar />
 
-      {/* 1. Hero Section */}
+      {/* 1. Living Hero Section & Layered Startup Canvas */}
       <HeroSection />
 
-      {/* 2. Co-Founder & Talent Marketplace Bento Grid */}
+      {/* 2. Social Proof Animated Counter Metrics */}
+      <StatsSection />
+
+      {/* 3. Featured Product Launches (Product Hunt / App Store Style) */}
+      <ProductShowcaseSection />
+
+      {/* 4. Startup Journey Timeline (Idea to IPO Roadmap) */}
+      <StartupJourneyTimeline />
+
+      {/* 5. Live Founder & Investor Social Network Activity Feed */}
+      <FounderFeedSection />
+
+      {/* 6. Co-Founder & Talent Marketplace Bento Grid */}
       <MarketplaceBento />
 
-      {/* 3. AI Pitch & VC Thesis Matching Engine */}
-      <AIMatchingSection />
-
-      {/* 4. Interactive Product Dashboard Preview */}
+      {/* 7. Interactive Product Command Center & Analytics */}
       <InteractiveDashboardPreview />
 
-      {/* 5. Global Founder & VC Community Network */}
+      {/* 9. Global Founder & VC Community Network Map */}
       <CommunityNetworkSection />
 
-      {/* 6. Success Stories & Case Studies */}
+      {/* 10. Success Stories & Proven Case Studies */}
       <SuccessStoriesSection />
 
-      {/* 7. Security & Institutional Trust Vault */}
+      {/* 11. Security & Institutional Trust Vault */}
       <SecurityTrustSection />
 
-      {/* 8. Transparent Pricing Tiers */}
+      {/* 12. Transparent Pricing Tiers */}
       <PricingSection />
 
-      {/* 9. Testimonials Marquee */}
+      {/* 13. Testimonials Marquee */}
       <TestimonialsSection />
 
-      {/* 10. FAQ Accordion */}
+      {/* 14. FAQ Accordion */}
       <FAQSection />
 
-      {/* 11. Final Call to Action & Ecosystem Footer */}
+      {/* 15. Final Call to Action & Ecosystem Footer */}
       <FinalCTA />
     </main>
   );

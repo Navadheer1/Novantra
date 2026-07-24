@@ -115,7 +115,7 @@ export default function PostCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-slate-200/80 rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-md transition-all space-y-4 relative"
+      className="bg-white border border-slate-200/60 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-md transition-all space-y-4 relative"
       id={`post-${post.id}`}
     >
       {/* Header Row */}
@@ -160,7 +160,7 @@ export default function PostCard({
                   <span>•</span>
                 </span>
               ) : null}
-              <span>{new Date(post.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+              <span>{new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { SignUpButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { Sparkles, ArrowRight, Globe, Share2, MessageSquare } from "lucide-react";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 export function FinalCTA() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -26,7 +27,7 @@ export function FinalCTA() {
           </h2>
 
           <p className="text-base sm:text-lg text-slate-600 font-normal max-w-2xl mx-auto">
-            Get started today on Noventra. Match with verified venture partners, build your dream team, and pitch live in sub-second AI rooms.
+            Get started today on Noventra. Match with verified venture partners, build your dream team, launch products, and scale globally with AI precision.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -70,14 +71,7 @@ export function FinalCTA() {
       <div className="pt-12 border-t border-slate-200 grid grid-cols-2 md:grid-cols-5 gap-8 text-left text-xs">
         {/* Brand Col */}
         <div className="col-span-2 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-[1px] shadow-sm">
-              <div className="w-full h-full bg-white rounded-[11px] flex items-center justify-center font-black text-blue-600 text-sm">
-                N<span className="text-blue-500">V</span>
-              </div>
-            </div>
-            <span className="text-lg font-black tracking-wider text-slate-900">NOVENTRA</span>
-          </div>
+          <BrandLogo size={30} showText={true} textClassName="text-lg font-bold tracking-tight text-slate-900" />
           <p className="text-slate-600 leading-relaxed font-normal max-w-sm">
             The next-generation platform for founders, venture capitalists, and top engineering talent. Pitch, match, and scale globally.
           </p>
@@ -98,7 +92,7 @@ export function FinalCTA() {
         <div className="space-y-3">
           <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Platform</h4>
           <ul className="space-y-2 text-slate-600 font-medium">
-            <li><a href="#dashboard" className="hover:text-blue-600">WebRTC Rooms</a></li>
+            <li><a href="#product-showcase" className="hover:text-blue-600">Product Showcase</a></li>
             <li><a href="#ai-matching" className="hover:text-blue-600">Groq AI Copilot</a></li>
             <li><a href="#marketplace" className="hover:text-blue-600">Co-Founder Matcher</a></li>
             <li><a href="#dashboard" className="hover:text-blue-600">Deal-Flow Radar</a></li>

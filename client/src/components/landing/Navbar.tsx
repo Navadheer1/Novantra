@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import { Sparkles, ArrowRight, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 export function Navbar() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -23,7 +24,7 @@ export function Navbar() {
   const navLinks = [
     { name: "Platform", href: "#dashboard" },
     { name: "Marketplace", href: "#marketplace" },
-    { name: "AI Matcher", href: "#ai-matching" },
+    { name: "Launches", href: "#product-showcase" },
     { name: "Ecosystem", href: "#community" },
     { name: "Pricing", href: "#pricing" },
     { name: "FAQ", href: "#faq" },
@@ -40,20 +41,8 @@ export function Navbar() {
       >
         <div className="flex items-center justify-between">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-700 to-indigo-600 p-[1px] shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-white rounded-[11px] flex items-center justify-center font-black text-blue-600 text-lg">
-                N<span className="text-blue-500 font-extrabold text-sm">V</span>
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-black tracking-wider text-slate-900 flex items-center gap-1.5">
-                NOVENTRA
-              </span>
-              <span className="text-[9px] uppercase font-bold tracking-widest text-blue-600 -mt-1">
-                Ecosystem
-              </span>
-            </div>
+          <Link href="/" className="flex items-center gap-2 group">
+            <BrandLogo size={36} showText={true} textClassName="text-xl font-bold tracking-tight text-slate-900" />
           </Link>
 
           {/* Desktop Navigation Links */}

@@ -3,19 +3,24 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Video,
+  Layers,
   LineChart,
   MessageSquare,
   Building2,
   Sparkles,
   Zap,
+  CheckCircle2,
+  TrendingUp,
+  Award,
+  ArrowUpRight,
+  ShieldCheck,
 } from "lucide-react";
 
 export function InteractiveDashboardPreview() {
-  const [activeTab, setActiveTab] = useState<"pitch" | "analytics" | "messages" | "radar">("pitch");
+  const [activeTab, setActiveTab] = useState<"workspace" | "analytics" | "messages" | "radar">("workspace");
 
   const tabs = [
-    { id: "pitch", label: "WebRTC Pitch Room", icon: Video },
+    { id: "workspace", label: "Startup Workspace & Feed", icon: Layers },
     { id: "analytics", label: "Deal-Flow Analytics", icon: LineChart },
     { id: "messages", label: "Founder Inbox", icon: MessageSquare },
     { id: "radar", label: "VC Radar", icon: Building2 },
@@ -26,13 +31,13 @@ export function InteractiveDashboardPreview() {
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-12">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4">
-          <Sparkles className="w-3.5 h-3.5" /> Next-Gen Product Interface
+          <Sparkles className="w-3.5 h-3.5" /> Next-Gen Product Command Center
         </div>
         <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-          Everything You Need to <span className="text-gradient-hero">Build & Scale</span>
+          Everything You Need to <span className="text-gradient-hero">Build, Launch & Scale</span>
         </h2>
         <p className="mt-4 text-base sm:text-lg text-slate-600 font-normal">
-          An all-in-one command center designed for rapid founder execution, instant investor matchmaking, and seamless team hiring.
+          An all-in-one operating system designed for rapid founder execution, instant investor matchmaking, and global team hiring.
         </p>
       </div>
 
@@ -66,92 +71,105 @@ export function InteractiveDashboardPreview() {
           <div className="hidden lg:flex items-center gap-3 text-xs">
             <span className="text-slate-500 font-medium">Round Target:</span>
             <span className="text-emerald-700 font-extrabold bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-              $2,500,000 SAFE (78% Closed)
+              $4,000,000 SAFE (80% Closed)
             </span>
           </div>
         </div>
 
         {/* Tab Content Display Area */}
         <AnimatePresence mode="wait">
-          {activeTab === "pitch" && (
+          {activeTab === "workspace" && (
             <motion.div
-              key="pitch"
+              key="workspace"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.3 }}
               className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-left"
             >
-              {/* Left 8 Cols: WebRTC Main Stage */}
-              <div className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                    <span className="text-xs font-bold text-white">Series A Pitching: MedQuick.AI</span>
+              {/* Left 8 Cols: Startup Product & Feed Stage */}
+              <div className="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-xs font-bold text-white">Startup Launch Workspace: MedQuick AI</span>
                   </div>
-                  <span className="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                    00:14:32
+                  <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                    Active Pitch Deck Sync
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 aspect-[16/9] bg-slate-950 rounded-xl p-2 relative overflow-hidden">
-                  <div className="relative rounded-lg overflow-hidden bg-slate-800">
-                    <img
-                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=200&fit=crop"
-                      alt="Founder"
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute bottom-2 left-2 text-[10px] font-bold bg-black/60 backdrop-blur px-2 py-0.5 rounded text-white">
-                      Sarah (Founder)
+                {/* Main Product Showcase Box */}
+                <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold text-white flex items-center gap-2">
+                        MedQuick AI — Slide 4/12 <Award className="w-4 h-4 text-amber-400" />
+                      </h3>
+                      <span className="text-xs text-slate-400">Financial Traction & Unit Economics</span>
+                    </div>
+                    <span className="text-xs font-mono text-blue-400 font-bold bg-blue-900/40 border border-blue-700/50 px-2.5 py-1 rounded-lg">
+                      ARR: $1.8M • 284% MoM
                     </span>
                   </div>
-                  <div className="relative rounded-lg overflow-hidden bg-slate-800">
-                    <img
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop"
-                      alt="VC Partner"
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute bottom-2 left-2 text-[10px] font-bold bg-black/60 backdrop-blur px-2 py-0.5 rounded text-white">
-                      David (Sequoia Partner)
-                    </span>
+
+                  {/* Visual ARR Chart Simulation */}
+                  <div className="h-28 bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex items-end justify-between gap-2">
+                    {[30, 45, 60, 55, 75, 90, 110, 140, 180].map((h, idx) => (
+                      <div key={idx} className="w-full flex flex-col items-center gap-1">
+                        <div
+                          style={{ height: `${(h / 180) * 100}%` }}
+                          className="w-full bg-gradient-to-t from-blue-600 to-emerald-400 rounded-t-sm"
+                        />
+                        <span className="text-[8px] text-slate-500 font-mono">M{idx + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+                    <span>LTV/CAC Ratio: <strong className="text-white">4.8x</strong></span>
+                    <span>Gross Margin: <strong className="text-emerald-400">84%</strong></span>
+                    <span>Net Retention: <strong className="text-white">142%</strong></span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-white/5 text-xs">
+                {/* Groq AI Recommendation Bar */}
+                <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
                   <div className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-amber-400 fill-amber-400/20" />
-                    <span className="text-slate-300">Groq AI Recommendation: "Focus on Q3 ARR pipeline growth"</span>
+                    <span className="text-slate-300">Groq AI Recommendation: "Highlight $1.8M ARR growth speed for Sequoia thesis."</span>
                   </div>
                   <button className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded-lg text-xs">
-                    Share Deck Slide 6
+                    Share Deck Link
                   </button>
                 </div>
               </div>
 
               {/* Right 4 Cols: Live Q&A & Investor Request Feed */}
               <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4 text-left">
-                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Investor Questions</h4>
+                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Investor Questions & Terms</h4>
 
                 <div className="space-y-3 text-xs">
                   <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-xs">
                     <div className="flex items-center justify-between text-slate-500 mb-1">
-                      <span className="font-bold text-slate-900">David (Sequoia)</span>
+                      <span className="font-bold text-slate-900">David (Sequoia Capital)</span>
                       <span className="text-[10px]">12:44 PM</span>
                     </div>
-                    <p className="text-slate-700">"What is your gross margin profile for the AI API tier?"</p>
+                    <p className="text-slate-700">"Great gross margins. We are preparing a $2.5M lead SAFE offer."</p>
                   </div>
 
                   <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-xs">
                     <div className="flex items-center justify-between text-slate-500 mb-1">
-                      <span className="font-bold text-slate-900">Jessica (a16z)</span>
+                      <span className="font-bold text-slate-900">Jessica (a16z Bio Fund)</span>
                       <span className="text-[10px]">12:45 PM</span>
                     </div>
-                    <p className="text-slate-700">"Can you share the customer retention cohort data?"</p>
+                    <p className="text-slate-700">"Can you send over the HIPAA compliance verification documents?"</p>
                   </div>
                 </div>
 
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs shadow-sm">
-                  Send Term Sheet Link
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5">
+                  <span>Send Term Sheet Agreement</span>
+                  <ArrowUpRight className="w-4 h-4" />
                 </button>
               </div>
             </motion.div>
@@ -225,13 +243,13 @@ export function InteractiveDashboardPreview() {
                 {[
                   {
                     name: "Michael Chang (Partner @ Founders Fund)",
-                    msg: "Loved your AI inference benchmarks slide. Are you available for a 15-min call tomorrow at 2 PM PST?",
+                    msg: "Loved your AI inference benchmarks slide. Are you available to review term sheet terms tomorrow?",
                     time: "10m ago",
                     unread: true,
                   },
                   {
                     name: "Sarah Jenkins (Lead Engineer @ Ex-OpenAI)",
-                    msg: "Hey Elena! Saw your co-founder post for a Principal Systems Architect. I'd love to discuss equity terms.",
+                    msg: "Hey Sarah! Saw your co-founder post for a Principal Systems Architect. I'd love to discuss equity terms.",
                     time: "1h ago",
                     unread: false,
                   },
@@ -266,8 +284,8 @@ export function InteractiveDashboardPreview() {
               className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-left"
             >
               {[
-                { name: "Sequoia Capital", sector: "AI & SaaS", checks: "$1M - $10M" },
-                { name: "Andreessen Horowitz", sector: "FinTech & Crypto", checks: "$500K - $15M" },
+                { name: "Sequoia Capital", sector: "AI & HealthTech", checks: "$1M - $10M" },
+                { name: "Andreessen Horowitz", sector: "FinTech & SaaS", checks: "$500K - $15M" },
                 { name: "Benchmark", sector: "Consumer & Infra", checks: "$2M - $8M" },
                 { name: "Lightspeed", sector: "Enterprise AI", checks: "$1M - $5M" },
               ].map((vc) => (

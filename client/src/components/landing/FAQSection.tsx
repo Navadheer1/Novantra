@@ -17,8 +17,8 @@ export function FAQSection() {
       a: "Yes. Noventra incorporates SOC2 Type II bank-grade encryption and optional Stealth Mode. Investors must sign a mutual automated NDA before accessing proprietary pitch materials or cap tables.",
     },
     {
-      q: "How do the live WebRTC Pitch Rooms work?",
-      a: "WebRTC pitch rooms are browser-native video conference environments optimized for low-latency pitch presentations. They feature integrated deck slide sync, real-time AI copilot tips, live VC Q&A queues, and one-click term sheet triggers.",
+      q: "How do investor meetings and live pitch presentations work on Noventra?",
+      a: "Noventra provides real-time collaborative workspace tools with live pitch deck sync, AI copilot tips, investor Q&A queues, and one-click term sheet triggers. Meeting capabilities are built directly into your workflow when you're ready to pitch.",
     },
     {
       q: "Can I find technical co-founders or founding engineers on Noventra?",

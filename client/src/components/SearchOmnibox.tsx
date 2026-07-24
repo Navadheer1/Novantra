@@ -237,6 +237,7 @@ export default function SearchOmnibox({ isMobile = false }: { isMobile?: boolean
           }}
           onKeyDown={handleKeyDown}
           placeholder="Search founders, VCs, startups, posts..."
+          suppressHydrationWarning
           className="w-full pl-10 pr-9 py-2 border border-border rounded-xl bg-muted/40 text-sm placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/80 focus:bg-background transition-all"
         />
         {query && (

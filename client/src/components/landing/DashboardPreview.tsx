@@ -14,7 +14,7 @@ export default function DashboardPreview() {
   // Dynamic alerts list simulation state
   const [alerts, setAlerts] = useState([
     { id: 1, text: "Sequoia Partner matched with MedQuick.AI", type: "match", time: "Just now" },
-    { id: 2, text: "New WebRTC Pitch room created by Marcus Labs", type: "room", time: "1 min ago" },
+    { id: 2, text: "New Product Launch by Synapse Labs", type: "room", time: "1 min ago" },
     { id: 3, text: "Groq AI pitch deck audit generated for Noventra", type: "ai", time: "3 mins ago" }
   ]);
 
@@ -49,7 +49,7 @@ export default function DashboardPreview() {
     // 3. Loop sliding notifications alerts
     const feedTemplates = [
       { text: "a16z requested allocation details for MedQuick", type: "match" },
-      { text: "Founder X launched Pitch Room for SaaS Builder", type: "room" },
+      { text: "Founder X launched product update for SaaS Builder", type: "room" },
       { text: "Groq cold email generated for Accel Partners", type: "ai" }
     ];
     let templateIdx = 0;
@@ -99,7 +99,7 @@ export default function DashboardPreview() {
           {[
             { label: "Deal-Flow Feed", icon: TrendingUp, active: true },
             { label: "AI Pitch Builder", icon: Sparkles },
-            { label: "Video Pitch Rooms", icon: Video },
+            { label: "Startup Workspace", icon: Video },
             { label: "Platform Shop", icon: Briefcase }
           ].map(tab => {
             const Icon = tab.icon;

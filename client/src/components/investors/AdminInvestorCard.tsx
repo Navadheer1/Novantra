@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, ShieldAlert, Award, BarChart3, CheckCircle2 } from "lucide-react";
 import { InvestorCardData } from "./FounderInvestorCard";
@@ -15,11 +16,13 @@ export default function AdminInvestorCard({ investor, onActionSuccess }: AdminIn
     <div className="bg-amber-500/5 border border-amber-500/30 rounded-2xl p-5 shadow-sm space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center font-bold text-amber-600">
+          <Link href={`/profile/${investor.id}`} className="w-10 h-10 rounded-xl bg-amber-500/10 shrink-0 flex items-center justify-center font-bold text-amber-600 hover:bg-amber-500/20 hover:scale-105 transition-all">
             {investor.name.slice(0, 2).toUpperCase()}
-          </div>
+          </Link>
           <div>
-            <h3 className="text-sm font-black text-foreground">{investor.name}</h3>
+            <Link href={`/profile/${investor.id}`}>
+              <h3 className="text-sm font-black text-foreground hover:text-amber-600 hover:underline transition-colors cursor-pointer">{investor.name}</h3>
+            </Link>
             <p className="text-[10px] text-muted-foreground font-mono">{investor.email}</p>
           </div>
         </div>

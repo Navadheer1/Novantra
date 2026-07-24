@@ -63,6 +63,7 @@ import exploreRouter from './routes/explore';
 import discoveryRouter from './routes/discovery';
 import marketplaceRouter from './routes/marketplace';
 import investorRouter from './routes/investor';
+import pitchesRouter from './routes/pitches';
 
 // Mount API routes
 app.use('/api/users', usersRouter);
@@ -78,6 +79,7 @@ app.use('/api/explore', exploreRouter);
 app.use('/api/discovery', discoveryRouter);
 app.use('/api/marketplace', marketplaceRouter);
 app.use('/api/investor', investorRouter);
+app.use('/api/pitches', pitchesRouter);
 
 // Health check endpoints for production & frontend status pinging
 const getHealthStatus = () => ({

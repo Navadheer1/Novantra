@@ -14,6 +14,8 @@ import {
   LayoutDashboard, PieChart, Bell, Settings, LogOut, Phone, Scale, RefreshCw, X
 } from "lucide-react";
 import Link from "next/link";
+import PitchKanbanBoard from "@/components/pitches/PitchKanbanBoard";
+import PitchViewerModal from "@/components/pitches/PitchViewerModal";
 
 interface MetricCards {
   totalStartups: number;
@@ -108,6 +110,9 @@ export default function VCDashboard() {
   const [pipeline, setPipeline] = useState<PipelineItem[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [savedList, setSavedList] = useState<any[]>([]);
+  const [pitchesList, setPitchesList] = useState<any[]>([]);
+  const [selectedPitch, setSelectedPitch] = useState<any | null>(null);
+  const [isPitchViewerOpen, setIsPitchViewerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Filters state
@@ -180,6 +185,13 @@ export default function VCDashboard() {
       if (savedRes.ok) {
         const savedData = await savedRes.json();
         setSavedList(savedData);
+      }
+
+      // 6. Load Incoming Pitch Objects
+      const pitchesRes = await fetch(`${apiUrl}/api/pitches/investor`, { headers });
+      if (pitchesRes.ok) {
+        const pitchesData = await pitchesRes.json();
+        setPitchesList(pitchesData);
       }
 
     } catch (err) {
@@ -710,68 +722,72 @@ export default function VCDashboard() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 tracking-tight">Investment Deal Pipeline</h3>
-                  <p className="text-xs text-slate-500">Track and manage stage transitions across active investment evaluations</p>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">Venture Investment CRM & Pitch Pipeline</h3>
+                  <p className="text-xs text-slate-500">Drag-and-drop pitch objects across deal stages (New → Viewed → Interested → Meeting → Due Diligence → Term Sheet)</p>
                 </div>
               </div>
 
-              {/* Kanban Columns Overflow Container */}
-              <div className="flex gap-4 overflow-x-auto pb-4 pt-1">
-                {pipelineStages.map((stg) => {
-                  const stageItems = pipeline.filter((p) => p.stage === stg.key);
-                  return (
-                    <div key={stg.key} className="w-72 shrink-0 bg-slate-100/70 border border-slate-200/80 rounded-3xl p-3.5 space-y-3">
-                      
-                      {/* Column Header */}
-                      <div className="flex items-center justify-between px-1">
-                        <span className={`text-xs font-extrabold uppercase px-2.5 py-1 rounded-xl border ${stg.color}`}>
-                          {stg.label}
-                        </span>
-                        <span className="text-xs font-black text-slate-600">{stageItems.length}</span>
-                      </div>
-
-                      {/* Cards List */}
-                      <div className="space-y-3 min-h-[300px]">
-                        {stageItems.length === 0 ? (
-                          <div className="h-24 border border-dashed border-slate-300 rounded-2xl flex items-center justify-center text-[11px] text-slate-400 font-semibold italic">
-                            No deals in stage
-                          </div>
-                        ) : (
-                          stageItems.map((item) => (
-                            <div key={item.id} className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-                              <div className="flex items-center justify-between">
-                                <h5 className="text-xs font-black text-slate-900">{item.startup.name}</h5>
-                                <span className="text-[9px] font-bold uppercase text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                                  {item.startup.stage}
-                                </span>
-                              </div>
-
-                              <p className="text-[11px] text-slate-500 font-medium line-clamp-2">{item.startup.description}</p>
-
-                              {/* Stage Transition Selector */}
-                              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-slate-400">Move stage:</span>
-                                <select
-                                  value={item.stage}
-                                  onChange={(e) => handleUpdatePipelineStage(item.startup.id, e.target.value)}
-                                  className="text-[10px] font-extrabold bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 outline-none cursor-pointer"
-                                >
-                                  {pipelineStages.map((s) => (
-                                    <option key={s.key} value={s.key}>{s.label}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Pitch Kanban Pipeline */}
+              <PitchKanbanBoard
+                pitches={pitchesList.length > 0 ? pitchesList : [
+                  {
+                    id: "pitch-demo-1",
+                    status: "SUBMITTED",
+                    elevatorPitch: "Autonomous Agentic AI Infrastructure platform cutting cloud deployment time by 80%.",
+                    amountRaising: 500000,
+                    startup: { name: "Nova AI Labs", stage: "Seed" },
+                    founder: { name: "Sarah Vance" },
+                    aiSnapshot: { matchScore: 94 }
+                  },
+                  {
+                    id: "pitch-demo-2",
+                    status: "MEETING_REQUESTED",
+                    elevatorPitch: "Cross-border fintech syndicate allocation and cap table management platform.",
+                    amountRaising: 250000,
+                    startup: { name: "SyncFlow Tech", stage: "Pre-Seed" },
+                    founder: { name: "Sarah Chen" },
+                    aiSnapshot: { matchScore: 91 }
+                  }
+                ]}
+                onSelectPitch={(p) => {
+                  setSelectedPitch(p);
+                  setIsPitchViewerOpen(true);
+                }}
+                onStatusChange={async (pitchId, newStatus) => {
+                  setPitchesList(pitchesList.map((p) => (p.id === pitchId ? { ...p, status: newStatus } : p)));
+                  try {
+                    const token = await getToken();
+                    await fetch(`${getApiUrl()}/api/pitches/${pitchId}/status`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({ status: newStatus })
+                    });
+                  } catch (err) {
+                    console.error("Error updating status:", err);
+                  }
+                }}
+              />
             </div>
           )}
+
+          <PitchViewerModal
+            pitch={selectedPitch}
+            isOpen={isPitchViewerOpen}
+            onClose={() => setIsPitchViewerOpen(false)}
+            onStatusChange={async (pitchId, newStatus) => {
+              setPitchesList(pitchesList.map((p) => (p.id === pitchId ? { ...p, status: newStatus } : p)));
+              try {
+                const token = await getToken();
+                await fetch(`${getApiUrl()}/api/pitches/${pitchId}/status`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ status: newStatus })
+                });
+              } catch (err) {
+                console.error("Error updating status:", err);
+              }
+            }}
+          />
 
           {/* TAB C: PORTFOLIO MANAGEMENT */}
           {activeTab === "PORTFOLIO" && (

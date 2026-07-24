@@ -287,7 +287,7 @@ export default function TrendingFeed({ onSelectVideo, onSelectChannel, videos, s
                       <div className="space-y-0.5">
                         <h4 className="text-[11px] font-bold text-neutral-900 dark:text-white line-clamp-1">{e.title}</h4>
                         <span className="text-[9px] text-neutral-400 font-bold block">
-                          {new Date(e.date).toLocaleDateString([], { month: "short", day: "numeric" })}
+                          {new Date(e.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </span>
                       </div>
                       <span className="text-[9px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 px-2 py-0.5 rounded-full select-none shrink-0">

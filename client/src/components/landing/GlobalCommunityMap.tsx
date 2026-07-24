@@ -30,7 +30,7 @@ export type UserRole =
 export type UserStatus =
   | "Online"
   | "Recently Active"
-  | "In Meeting"
+  | "Collaborating"
   | "Pitching"
   | "Hiring"
   | "Fundraising";
@@ -148,7 +148,7 @@ export const COMMUNITY_NODES: UserNode[] = [
     funding: "Active Investor",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop",
     coords: [-122.4194, 37.7749],
-    status: "In Meeting",
+    status: "Collaborating",
     tags: ["Seed", "Series A", "AI"],
     connections: ["sf-1", "london-2", "blr-1"],
   },
@@ -261,7 +261,7 @@ export const COMMUNITY_NODES: UserNode[] = [
     funding: "Active Investor",
     avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&h=120&fit=crop",
     coords: [-0.1276, 51.5074],
-    status: "In Meeting",
+    status: "Collaborating",
     tags: ["Series A", "Fintech", "SaaS"],
     connections: ["sf-2", "london-1", "paris-1"],
   },
@@ -425,7 +425,7 @@ export const COMMUNITY_NODES: UserNode[] = [
     funding: "Active Investor",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop",
     coords: [103.8198, 1.3521],
-    status: "In Meeting",
+    status: "Collaborating",
     tags: ["SEA", "Seed", "Marketplaces"],
     connections: ["sg-1", "blr-2"],
   },
@@ -454,13 +454,13 @@ export const COMMUNITY_NODES: UserNode[] = [
     role: "Developer",
     location: "Seoul, South Korea",
     hubName: "Seoul",
-    startup: "HyperScale Vision",
-    bio: "Sub-millisecond WebRTC streaming engine.",
+    startup: "HyperScale AI",
+    bio: "Sub-millisecond real-time AI inference engine.",
     funding: "Hiring Engineers",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop",
     coords: [126.978, 37.5665],
     status: "Online",
-    tags: ["WebRTC", "Video", "Streaming"],
+    tags: ["AI", "Real-Time", "Infrastructure"],
     connections: ["tokyo-1", "sf-1"],
   },
 

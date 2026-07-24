@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getApiUrl } from "@/lib/apiConfig";
 import { resilientFetch } from "@/lib/apiClient";
 import SearchOmnibox from "./SearchOmnibox";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 import NavbarMeetButton from "./meet/NavbarMeetButton";
 
@@ -189,8 +190,7 @@ export default function Navbar() {
           {/* Logo and Brand */}
           <div className="flex items-center gap-2 lg:gap-4 shrink-0">
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <span className="text-xl lg:text-2xl font-black tracking-wider text-primary">NOVENTRA</span>
-              <span className="hidden sm:inline-block text-[9px] lg:text-[10px] uppercase font-bold tracking-widest bg-primary/10 text-primary px-1.5 py-0.5 rounded">ECOSYSTEM</span>
+              <BrandLogo size={32} showText={true} textClassName="text-xl lg:text-2xl font-black tracking-tight text-slate-900 dark:text-white" />
             </Link>
           </div>
 
